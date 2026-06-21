@@ -25,27 +25,29 @@ import { AuthDisplayLoggedOut } from "@/components/auth/auth-display";
 import { SignInModal } from "@/components/auth/sign-in-modal";
 import { ChatSidebar } from "@/components/chat/sidebar";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   parseSidebarOpen,
   serializeSidebarOpen,
   SIDEBAR_COOKIE_MAX_AGE,
   SIDEBAR_COOKIE_NAME,
 } from "@/lib/chat/sidebar-state";
-import type { ChatListItem, SetupStatus, Viewer } from "@/lib/chat/types";
+import type { ChatListItem, Viewer } from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
 
 export function AgentChatShell({
   children,
   initialChats,
   initialNextCursor,
-  setupStatus,
   viewer,
 }: {
   readonly children: ReactNode;
   readonly initialChats: readonly ChatListItem[];
   readonly initialNextCursor: string | null;
-  readonly setupStatus: SetupStatus;
   readonly viewer: Viewer | null;
 }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -58,16 +60,15 @@ export function AgentChatShell({
   const [draftBeforeSignIn, setDraftBeforeSignIn] = useState("");
   const [signInCallbackPath, setSignInCallbackPath] = useState("/");
   const [viewerState, setViewerState] = useState(viewer);
-  const [setupStatusState, setSetupStatusState] = useState(setupStatus);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [enabledConnections, setEnabledConnections] = useState<EnabledConnections>({
-    linear: true,
-    notion: true,
-    sentry: true,
-  });
+  const [enabledConnections, setEnabledConnections] =
+    useState<EnabledConnections>({
+      linear: true,
+      notion: true,
+      sentry: true,
+    });
   const cursorRef = useRef(initialNextCursor);
   const activeChatIdRef = useRef(activeChatId);
-  const setupReady = setupStatusState.appReady;
   const router = useRouter();
 
   useEffect(() => {
@@ -177,7 +178,9 @@ export function AgentChatShell({
     setLoadingMore(true);
 
     try {
-      const response = await fetch(`/api/chats?cursor=${encodeURIComponent(cursor)}`);
+      const response = await fetch(
+        `/api/chats?cursor=${encodeURIComponent(cursor)}`,
+      );
 
       if (!response.ok) {
         return;
@@ -207,17 +210,16 @@ export function AgentChatShell({
     ({
       chats,
       nextCursor: incomingNextCursor,
-      setupStatus: incomingSetupStatus,
       viewer: incomingViewer,
     }: {
       readonly chats: readonly ChatListItem[];
       readonly nextCursor: string | null;
-      readonly setupStatus: SetupStatus;
       readonly viewer: Viewer | null;
     }) => {
-      setSetupStatusState(incomingSetupStatus);
       setViewerState(incomingViewer);
-      setHistory((items) => (incomingViewer ? mergeChatHistory(chats, items) : []));
+      setHistory((items) =>
+        incomingViewer ? mergeChatHistory(chats, items) : [],
+      );
       setNextCursor(incomingNextCursor);
       setHistoryLoading(false);
       cursorRef.current = incomingNextCursor;
@@ -239,7 +241,10 @@ export function AgentChatShell({
     }
 
     return () => {
-      window.removeEventListener(CHAT_BOOTSTRAP_SYNC_EVENT, handleBootstrapSync);
+      window.removeEventListener(
+        CHAT_BOOTSTRAP_SYNC_EVENT,
+        handleBootstrapSync,
+      );
     };
   }, [setBootstrapData]);
 
@@ -252,7 +257,6 @@ export function AgentChatShell({
       requestSignIn,
       setActiveChatId,
       setConnectionEnabled,
-      setupStatus: setupStatusState,
       touchChat,
       updateChatTitle,
       viewer: viewerState,
@@ -264,7 +268,6 @@ export function AgentChatShell({
       removeChat,
       requestSignIn,
       setConnectionEnabled,
-      setupStatusState,
       touchChat,
       updateChatTitle,
       viewerState,
@@ -284,7 +287,6 @@ export function AgentChatShell({
       onNewChat={startNewChat}
       onSignIn={() => requestSignIn()}
       onToggleSidebar={() => setDesktopSidebarOpenPersisted(false)}
-      setupStatus={setupStatusState}
       viewer={viewerState}
     />
   );
@@ -373,7 +375,6 @@ export function AgentChatShell({
               onNavigate={handleSidebarNavigate}
               onNewChat={startNewChat}
               onSignIn={() => requestSignIn()}
-              setupStatus={setupStatusState}
               viewer={viewerState}
             />
           </div>
@@ -381,10 +382,12 @@ export function AgentChatShell({
 
         <SignInModal
           callbackPath={signInCallbackPath}
-          disabled={!setupReady}
           onBeforeSignIn={() => {
             if (draftBeforeSignIn) {
-              window.sessionStorage.setItem("eve-chat-draft", draftBeforeSignIn);
+              window.sessionStorage.setItem(
+                "eve-chat-draft",
+                draftBeforeSignIn,
+              );
             }
           }}
           onOpenChange={setAuthDialogOpen}
@@ -478,7 +481,9 @@ function ShareChatButton() {
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{copied ? "Copied" : "Copy link"}</TooltipContent>
+      <TooltipContent side="bottom">
+        {copied ? "Copied" : "Copy link"}
+      </TooltipContent>
     </Tooltip>
   );
 }
@@ -513,5 +518,8 @@ function mergeChatHistory(
   const currentIds = new Set(current.map((item) => item.id));
   const freshIncoming = incoming.filter((item) => !currentIds.has(item.id));
 
-  return [...freshIncoming, ...current.map((item) => incomingById.get(item.id) ?? item)];
+  return [
+    ...freshIncoming,
+    ...current.map((item) => incomingById.get(item.id) ?? item),
+  ];
 }

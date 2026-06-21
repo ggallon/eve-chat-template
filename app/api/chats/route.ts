@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { listChatsPageByUser } from "@/lib/db/queries";
 import { getServerViewer } from "@/lib/session";
-import { getSetupStatus } from "@/lib/setup";
 
 export async function GET(request: Request) {
-  const setupStatus = await getSetupStatus();
-
-  if (!setupStatus.appReady) {
-    return NextResponse.json({ chats: [], nextCursor: null });
-  }
-
-  const viewer = await getServerViewer(setupStatus);
-
+  const viewer = await getServerViewer();
   if (!viewer) {
     return NextResponse.json({ chats: [], nextCursor: null }, { status: 401 });
   }

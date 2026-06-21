@@ -1,12 +1,7 @@
 import type { AuthFn } from "eve/channels/auth";
 import { auth } from "@/lib/auth";
-import { isAppConfigured } from "@/lib/setup";
 
 export const betterAuthEveAuth: AuthFn<Request> = async (request) => {
-  if (!(await isAppConfigured())) {
-    return null;
-  }
-
   const session = await auth.api.getSession({
     headers: request.headers,
   });

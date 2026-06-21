@@ -82,7 +82,11 @@ export function AgentChatSkeleton({ mode }: { readonly mode: "chat" | "new" }) {
   );
 }
 
-export function AgentChatContentSkeleton({ mode }: { readonly mode: "chat" | "new" }) {
+export function AgentChatContentSkeleton({
+  mode,
+}: {
+  readonly mode: "chat" | "new";
+}) {
   return mode === "new" ? <EmptyChatSkeleton /> : <ConversationSkeleton />;
 }
 
@@ -91,14 +95,6 @@ function EmptyChatSkeleton() {
     <div className="flex min-h-0 flex-1 flex-col pt-14 md:pt-8">
       <div className="flex min-h-0 flex-1 items-center justify-center pb-12 sm:pb-[8vh]">
         <div className="w-full max-w-2xl space-y-6 sm:space-y-8 md:space-y-9">
-          <h1 className="flex justify-center">
-            <img
-              alt=""
-              className="size-16 select-none invert sm:size-20 md:size-24 dark:invert-0"
-              draggable={false}
-              src="/eve.svg"
-            />
-          </h1>
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
             <StaticComposerFallback />
           </div>

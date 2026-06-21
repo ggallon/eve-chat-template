@@ -25,13 +25,3 @@ export type ActiveChat = {
   readonly session: SessionState | undefined;
   readonly title: string;
 };
-
-export type SetupStatus = {
-  readonly appReady: boolean;
-  readonly authReady: boolean;
-  readonly databaseConfigured: boolean;
-  readonly databaseReady: boolean;
-  readonly databaseSchemaReady: boolean;
-  readonly missing: readonly string[];
-  readonly rateLimitReady: boolean;
-};

@@ -6,13 +6,20 @@ import {
   useEffect,
   useId,
   useRef,
-  type FormEvent,
+  type ChangeEvent,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getChatMessageLength, MAX_CHAT_MESSAGE_CHARS } from "@/lib/chat/limits";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  getChatMessageLength,
+  MAX_CHAT_MESSAGE_CHARS,
+} from "@/lib/chat/limits";
 import { cn } from "@/lib/utils";
 
 export function ChatComposer({
@@ -64,7 +71,13 @@ export function ChatComposer({
 
   const submitValue = useCallback(() => {
     const text = value.trim();
-    if (!text || disabled || isBusy || isPreparing || getChatMessageLength(text) > maxLength) {
+    if (
+      !text ||
+      disabled ||
+      isBusy ||
+      isPreparing ||
+      getChatMessageLength(text) > maxLength
+    ) {
       return;
     }
 
@@ -72,7 +85,7 @@ export function ChatComposer({
   }, [disabled, isBusy, isPreparing, maxLength, onSubmit, value]);
 
   const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event: ChangeEvent<HTMLFormElement>) => {
       event.preventDefault();
       submitValue();
     },
@@ -144,7 +157,9 @@ export function ChatComposer({
             <Button
               aria-label="Send message"
               className="size-6 cursor-pointer rounded-md bg-foreground text-background hover:bg-foreground/90 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-30"
-              disabled={disabled || trimmedValue.length === 0 || isOverMaxLength}
+              disabled={
+                disabled || trimmedValue.length === 0 || isOverMaxLength
+              }
               size="icon-xs"
               type="submit"
             >

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
-import type { ChatListItem, SetupStatus, Viewer } from "@/lib/chat/types";
+import type { ChatListItem, Viewer } from "@/lib/chat/types";
 
 export type EnabledConnections = {
   readonly linear: boolean;
@@ -20,7 +20,6 @@ type ChatShellContextValue = {
     connection: keyof EnabledConnections,
     enabled: boolean,
   ) => void;
-  readonly setupStatus: SetupStatus;
   readonly touchChat: (chat: ChatListItem) => void;
   readonly updateChatTitle: (chatId: string, title: string) => void;
   readonly viewer: Viewer | null;
@@ -35,7 +34,11 @@ export function ChatShellProvider({
   readonly children: ReactNode;
   readonly value: ChatShellContextValue;
 }) {
-  return <ChatShellContext.Provider value={value}>{children}</ChatShellContext.Provider>;
+  return (
+    <ChatShellContext.Provider value={value}>
+      {children}
+    </ChatShellContext.Provider>
+  );
 }
 
 export function useChatShell() {

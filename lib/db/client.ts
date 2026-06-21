@@ -4,16 +4,14 @@ import * as schema from "@/lib/db/schema";
 
 let database: NeonHttpDatabase<typeof schema> | null = null;
 
-export function isDatabaseConfigured() {
-  return Boolean(process.env.DATABASE_URL?.trim());
-}
-
 export function getDb() {
   if (!database) {
     const url = process.env.DATABASE_URL?.trim();
 
     if (!url) {
-      throw new Error("DATABASE_URL is required. Add Neon to this Vercel project first.");
+      throw new Error(
+        "DATABASE_URL is required. Add Neon to this Vercel project first.",
+      );
     }
 
     database = drizzle({ client: neon(url), schema });
@@ -58,11 +56,11 @@ export async function isDatabaseSchemaReady() {
     const result = rows[0];
     const ready = Boolean(
       result?.account_ready &&
-        result.chat_ready &&
-        result.chat_event_ready &&
-        result.session_ready &&
-        result.user_ready &&
-        result.verification_ready,
+      result.chat_ready &&
+      result.chat_event_ready &&
+      result.session_ready &&
+      result.user_ready &&
+      result.verification_ready,
     );
 
     return ready;

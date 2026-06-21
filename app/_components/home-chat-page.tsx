@@ -15,7 +15,6 @@ import {
   createProvisionalChatId,
   writePendingChatMessage,
 } from "@/lib/chat/provisional-chat";
-import type { SetupStatus } from "@/lib/chat/types";
 
 const IDLE_CONTROLLER_STATUS: AgentChatControllerStatus = {
   isBusy: false,
@@ -24,21 +23,16 @@ const IDLE_CONTROLLER_STATUS: AgentChatControllerStatus = {
 };
 
 export function HomeChatPage() {
-  const {
-    requestSignIn,
-    setActiveChatId,
-    setupStatus,
-    viewer,
-  } = useChatShell();
+  const { requestSignIn, setActiveChatId, viewer } = useChatShell();
   const [draft, setDraft] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const submittingRef = useRef(false);
-  const setupReady = setupStatus.appReady;
   const pathname = usePathname();
   const router = useRouter();
-  const toastError = clientError && dismissedError !== clientError ? clientError : null;
+  const toastError =
+    clientError && dismissedError !== clientError ? clientError : null;
 
   useEffect(() => {
     setActiveChatId(null);
@@ -85,14 +79,6 @@ export function HomeChatPage() {
         return;
       }
 
-      if (!setupReady) {
-        setClientError(
-          getHomeComposerDisabledReason({ setupStatus, submitting }) ??
-            "Finish setup before chatting.",
-        );
-        return;
-      }
-
       if (!viewer) {
         requestSignIn(message);
         return;
@@ -103,7 +89,10 @@ export function HomeChatPage() {
       setDraft("");
 
       const provisionalChatId = createProvisionalChatId();
-      const didStoreMessage = writePendingChatMessage(provisionalChatId, message);
+      const didStoreMessage = writePendingChatMessage(
+        provisionalChatId,
+        message,
+      );
 
       if (!didStoreMessage) {
         submittingRef.current = false;
@@ -116,20 +105,10 @@ export function HomeChatPage() {
       setActiveChatId(provisionalChatId);
       router.push(`/chat/${provisionalChatId}`, { scroll: false });
     },
-    [
-      requestSignIn,
-      router,
-      setActiveChatId,
-      setupReady,
-      setupStatus,
-      submitting,
-      viewer,
-    ],
+    [requestSignIn, router, setActiveChatId, submitting, viewer],
   );
 
-  const composerDisabled = !setupReady;
   const composerDisabledReason = getHomeComposerDisabledReason({
-    setupStatus,
     submitting,
   });
 
@@ -149,19 +128,10 @@ export function HomeChatPage() {
       <div className="flex min-h-0 flex-1 flex-col justify-between px-4 pt-8 pb-4 sm:px-6 sm:pb-6">
         <div className="flex min-h-0 flex-1 items-center justify-center pb-20 sm:pb-[12vh]">
           <div className="w-full max-w-2xl space-y-5 sm:space-y-7 md:space-y-8">
-            <h1 className="flex justify-center">
-              <img
-                alt="eve"
-                className="size-16 select-none invert sm:size-20 md:size-24 dark:invert-0"
-                draggable={false}
-                src="/eve.svg"
-              />
-            </h1>
             <ChatComposer
               autoFocus
-              disabled={composerDisabled}
               disabledReason={composerDisabledReason}
-              footerStart={<ComposerFooterControls setupStatus={setupStatus} />}
+              footerStart={<ComposerFooterControls />}
               isBusy={IDLE_CONTROLLER_STATUS.isBusy}
               isPreparing={submitting}
               onChange={setDraft}
@@ -179,32 +149,10 @@ export function HomeChatPage() {
 }
 
 function getHomeComposerDisabledReason({
-  setupStatus,
   submitting,
 }: {
-  readonly setupStatus: SetupStatus;
   readonly submitting: boolean;
 }) {
-  if (!setupStatus.databaseConfigured) {
-    return "Connect Neon Postgres before chatting.";
-  }
-
-  if (!setupStatus.databaseSchemaReady) {
-    return "Run database migrations: vercel env run -e production -- pnpm db:migrate.";
-  }
-
-  if (!setupStatus.authReady) {
-    const missing = setupStatus.missing.length
-      ? ` Missing: ${setupStatus.missing.join(", ")}.`
-      : "";
-
-    return `Finish auth setup before chatting.${missing}`;
-  }
-
-  if (!setupStatus.rateLimitReady) {
-    return "Provision Upstash Redis before chatting.";
-  }
-
   if (submitting) {
     return "Preparing chat.";
   }

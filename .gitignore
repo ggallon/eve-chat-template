@@ -1,14 +1,19 @@
-node_modules
-.env*
-!.env.example
+# folder
 .eve
+.next
+.output
 .vercel
 .workflow-data
-.next
-next-env.d.ts
-.output
 .nitro
 dist
+node_modules
+
+# files
 .DS_Store
+next-env.d.ts
 *.tsbuildinfo
+
+# environment
+.env*
 .env*.local
+!.env.example

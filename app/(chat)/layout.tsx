@@ -3,18 +3,14 @@ import { AgentChatBootstrapSync } from "@/app/_components/agent-chat-bootstrap-s
 import { AgentChatShell } from "@/app/_components/agent-chat-shell";
 import { listChatsPageByUser } from "@/lib/db/queries";
 import { getServerViewer } from "@/lib/session";
-import { getInitialSetupStatus, getSetupStatus } from "@/lib/setup";
 
-export default function ChatLayout({ children }: { readonly children: ReactNode }) {
-  const setupStatus = getInitialSetupStatus();
-
+export default function ChatLayout({
+  children,
+}: {
+  readonly children: ReactNode;
+}) {
   return (
-    <AgentChatShell
-      initialChats={[]}
-      initialNextCursor={null}
-      setupStatus={setupStatus}
-      viewer={null}
-    >
+    <AgentChatShell initialChats={[]} initialNextCursor={null} viewer={null}>
       {children}
       <div className="hidden" aria-hidden>
         <Suspense fallback={null}>
@@ -26,19 +22,15 @@ export default function ChatLayout({ children }: { readonly children: ReactNode 
 }
 
 async function ResolvedChatBootstrap() {
-  const setupStatus = await getSetupStatus();
-  const viewer = await getServerViewer(setupStatus);
-  const appReady = setupStatus.appReady;
-  const initialChatsPage =
-    viewer && appReady
-      ? await listChatsPageByUser(viewer.id)
-      : { items: [], nextCursor: null };
+  const viewer = await getServerViewer();
+  const initialChatsPage = viewer
+    ? await listChatsPageByUser(viewer.id)
+    : { items: [], nextCursor: null };
 
   return (
     <AgentChatBootstrapSync
       chats={initialChatsPage.items}
       nextCursor={initialChatsPage.nextCursor}
-      setupStatus={setupStatus}
       viewer={viewer}
     />
   );

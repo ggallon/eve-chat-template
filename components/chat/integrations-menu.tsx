@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { EnabledConnections } from "@/app/_components/chat-shell-context";
-import type { SetupStatus } from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
 
 type ConnectionItem = {
@@ -28,17 +27,13 @@ const CONNECTION_ITEMS: readonly ConnectionItem[] = [
 export function IntegrationsMenu({
   enabledConnections,
   onConnectionEnabledChange,
-  setupStatus,
 }: {
   readonly enabledConnections: EnabledConnections;
   readonly onConnectionEnabledChange: (
     connection: keyof EnabledConnections,
     enabled: boolean,
   ) => void;
-  readonly setupStatus: SetupStatus;
 }) {
-  const setupReady = setupStatus.appReady;
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -62,14 +57,10 @@ export function IntegrationsMenu({
             <DropdownMenuItem
               aria-checked={enabled}
               className="h-9 cursor-pointer gap-2 rounded-sm px-2 py-1 text-sm focus:bg-muted/70"
-              disabled={!setupReady}
               key={key}
               onSelect={(event) => {
                 event.preventDefault();
-
-                if (setupReady) {
-                  onConnectionEnabledChange(key, !enabled);
-                }
+                onConnectionEnabledChange(key, !enabled);
               }}
               role="menuitemcheckbox"
             >
@@ -77,7 +68,9 @@ export function IntegrationsMenu({
                 <Icon className="size-[18px]" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm text-foreground">{label}</span>
+                <span className="block truncate text-sm text-foreground">
+                  {label}
+                </span>
               </span>
               <span
                 aria-hidden="true"

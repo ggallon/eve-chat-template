@@ -22,11 +22,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ChatListItem, SetupStatus, Viewer } from "@/lib/chat/types";
+import type { ChatListItem, Viewer } from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
 
 const activeRowClass = "bg-muted/50 text-foreground hover:bg-muted/60";
-const inactiveRowClass = "text-muted-foreground hover:bg-muted/50 hover:text-foreground";
+const inactiveRowClass =
+  "text-muted-foreground hover:bg-muted/50 hover:text-foreground";
 
 export function ChatSidebar({
   activeChatId,
@@ -41,7 +42,6 @@ export function ChatSidebar({
   onNewChat,
   onSignIn,
   onToggleSidebar,
-  setupStatus,
   viewer,
 }: {
   readonly activeChatId: string | null;
@@ -56,10 +56,8 @@ export function ChatSidebar({
   readonly onNewChat: () => void;
   readonly onSignIn?: () => void;
   readonly onToggleSidebar?: () => void;
-  readonly setupStatus: SetupStatus;
   readonly viewer: Viewer | null;
 }) {
-  const authDisabled = !setupStatus.appReady;
   const newSessionActive = activeChatId === null;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -153,7 +151,9 @@ export function ChatSidebar({
                     onClick={() => onNavigate?.(chat.id)}
                   >
                     <span className="block truncate">{chat.title}</span>
-                    <span className="sr-only">Updated {formatHistoryTime(chat.updatedAt)}</span>
+                    <span className="sr-only">
+                      Updated {formatHistoryTime(chat.updatedAt)}
+                    </span>
                   </Link>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -212,18 +212,13 @@ export function ChatSidebar({
             </AuthDisplayLoggedIn>
             <AuthDisplayLoggedOut>
               <SidebarSignInButton
-                authDisabled={false}
                 onNavigate={onNavigate}
                 onSignIn={onSignIn}
               />
             </AuthDisplayLoggedOut>
           </>
         ) : (
-          <SidebarSignInButton
-            authDisabled={authDisabled}
-            onNavigate={onNavigate}
-            onSignIn={onSignIn}
-          />
+          <SidebarSignInButton onNavigate={onNavigate} onSignIn={onSignIn} />
         )}
       </div>
     </aside>
@@ -231,18 +226,15 @@ export function ChatSidebar({
 }
 
 function SidebarSignInButton({
-  authDisabled,
   onNavigate,
   onSignIn,
 }: {
-  readonly authDisabled: boolean;
   readonly onNavigate?: (chatId?: string | null) => void;
   readonly onSignIn?: () => void;
 }) {
   return (
     <button
       className="flex h-8 w-full items-center justify-between rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-      disabled={authDisabled}
       onClick={() => {
         onSignIn?.();
         onNavigate?.();

@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const title = "eve Chat Template";
+const title = "eve Chat";
 const description = "Build your own chat agent with eve.";
 const ogImage = {
   alt: title,
@@ -25,7 +25,11 @@ function resolveMetadataBase() {
     return new URL("http://localhost:3000");
   }
 
-  return new URL(configuredUrl.startsWith("http") ? configuredUrl : `https://${configuredUrl}`);
+  return new URL(
+    configuredUrl.startsWith("http")
+      ? configuredUrl
+      : `https://${configuredUrl}`,
+  );
 }
 
 const geistSans = Geist({
@@ -81,7 +85,11 @@ const themeScript = `
 })();
 `;
 
-export default function RootLayout({ children }: { readonly children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  readonly children: ReactNode;
+}) {
   return (
     <html
       className={`${geistSans.variable} ${geistMono.variable}`}
@@ -89,7 +97,10 @@ export default function RootLayout({ children }: { readonly children: ReactNode 
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} id="theme-init" />
+        <script
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+          id="theme-init"
+        />
         <AuthDisplayPreHydrationHead />
       </head>
       <body className={`${geistSans.className} antialiased`}>

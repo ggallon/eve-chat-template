@@ -20,7 +20,14 @@ import {
   XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   checkSendLimitAction,
   appendChatEventAction,
@@ -43,16 +50,22 @@ import {
 import { IntegrationsMenu } from "@/components/chat/integrations-menu";
 import { AgentMessage } from "@/components/chat/message";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { isChatTurnSettledEvent } from "@/lib/chat/events";
 import { getChatMessageLengthError } from "@/lib/chat/limits";
-import type { ActiveChat, SetupStatus, Viewer } from "@/lib/chat/types";
+import type { ActiveChat, Viewer } from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
 
 type AgentSnapshot = EveAgentStoreSnapshot<EveMessageData>;
 type PersistedClientSession = ClientSession & {
   readonly state: SessionState;
-  applyLocalEvents: (events: readonly HandleMessageStreamEvent[]) => SessionState;
+  applyLocalEvents: (
+    events: readonly HandleMessageStreamEvent[],
+  ) => SessionState;
   setState: (session: SessionState) => void;
 };
 type StreamSessionOptions = {
@@ -68,7 +81,10 @@ export type DraftHandlers = {
 
 export type AgentChatController = {
   readonly reset: () => void;
-  readonly sendMessage: (text: string, draftHandlers: DraftHandlers) => Promise<void>;
+  readonly sendMessage: (
+    text: string,
+    draftHandlers: DraftHandlers,
+  ) => Promise<void>;
   readonly stop: () => void;
 };
 
@@ -87,7 +103,9 @@ const IDLE_CONTROLLER_STATUS: AgentChatControllerStatus = {
 
 const EVE_CREATE_SESSION_PATH = "/eve/v1/session";
 const EVE_SESSION_ID_HEADER = "x-eve-session-id";
-const STREAM_OPEN_RETRYABLE_STATUS = new Set([404, 409, 425, 500, 502, 503, 504]);
+const STREAM_OPEN_RETRYABLE_STATUS = new Set([
+  404, 409, 425, 500, 502, 503, 504,
+]);
 const STREAM_DISCONNECT_RECONNECT_ATTEMPTS = 3;
 const STREAM_IDLE_TIMEOUT_MS = 120_000;
 const STREAM_RECONNECT_DELAY_MS = 350;
@@ -113,10 +131,13 @@ function createPersistedClientSession({
       const response = await postSessionTurn(previousSession, normalizedInput);
       const startedSession = {
         ...previousSession,
-        continuationToken: response.continuationToken ?? previousSession.continuationToken,
+        continuationToken:
+          response.continuationToken ?? previousSession.continuationToken,
         sessionId: response.sessionId,
         streamIndex:
-          previousSession.sessionId === response.sessionId ? previousSession.streamIndex : 0,
+          previousSession.sessionId === response.sessionId
+            ? previousSession.streamIndex
+            : 0,
       };
 
       session = startedSession;
@@ -226,7 +247,7 @@ async function postSessionTurn(
     throw new Error(await readResponseError(response));
   }
 
-  const payload = await response.json() as {
+  const payload = (await response.json()) as {
     readonly continuationToken?: unknown;
     readonly sessionId?: unknown;
   };
@@ -355,7 +376,11 @@ async function* streamSessionEvents({
     for (;;) {
       let disconnected = false;
       let foundBoundary = false;
-      const body = await openStreamBody({ sessionId, signal, startIndex: nextIndex });
+      const body = await openStreamBody({
+        sessionId,
+        signal,
+        startIndex: nextIndex,
+      });
 
       try {
         for await (const event of readNdjsonStream(body)) {
@@ -416,7 +441,10 @@ async function openStreamBody({
   readonly startIndex: number;
 }) {
   const path = `/eve/v1/session/${encodeURIComponent(sessionId)}/stream`;
-  const query = startIndex > 0 ? `?${new URLSearchParams({ startIndex: String(startIndex) })}` : "";
+  const query =
+    startIndex > 0
+      ? `?${new URLSearchParams({ startIndex: String(startIndex) })}`
+      : "";
   let status = 0;
   let body = "Failed to open message stream.";
 
@@ -639,7 +667,9 @@ function isStreamDisconnectError(error: unknown) {
     error.name === "AbortError" ||
     error.message === "terminated" ||
     code === "UND_ERR_SOCKET" ||
-    /abort|cancel|disconnect|premature close|socket|terminated/i.test(error.message)
+    /abort|cancel|disconnect|premature close|socket|terminated/i.test(
+      error.message,
+    )
   );
 }
 
@@ -692,26 +722,37 @@ export function AgentChatSession({
     enabledConnections,
     requestSignIn,
     setActiveChatId: setShellActiveChatId,
-    setupStatus,
     touchChat,
     viewer,
   } = useChatShell();
-  const [activeChatId, setActiveChatId] = useState(activeChat?.id ?? chatId ?? null);
-  const [currentTitle, setCurrentTitle] = useState(activeChat?.title ?? "New chat");
+  const [activeChatId, setActiveChatId] = useState(
+    activeChat?.id ?? chatId ?? null,
+  );
+  const [currentTitle, setCurrentTitle] = useState(
+    activeChat?.title ?? "New chat",
+  );
   const [clientError, setClientError] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
-  const [resumedEvents, setResumedEvents] = useState<HandleMessageStreamEvent[]>([]);
+  const [resumedEvents, setResumedEvents] = useState<
+    HandleMessageStreamEvent[]
+  >([]);
   const [isResuming, setIsResuming] = useState(false);
   const [isFinalizingTurn, setIsFinalizingTurn] = useState(false);
-  const [streamEvents, setStreamEvents] = useState<HandleMessageStreamEvent[]>([]);
-  const [localEvents, setLocalEvents] = useState<HandleMessageStreamEvent[]>([]);
+  const [streamEvents, setStreamEvents] = useState<HandleMessageStreamEvent[]>(
+    [],
+  );
+  const [localEvents, setLocalEvents] = useState<HandleMessageStreamEvent[]>(
+    [],
+  );
   const {
     clearMessage: clearLocalPendingUserMessage,
     message: localPendingUserMessage,
     messageRef: localPendingUserMessageRef,
     setMessage: setLocalPendingUserMessage,
   } = usePendingUserMessage();
-  const [skippingAuthorizationKey, setSkippingAuthorizationKey] = useState<string | null>(null);
+  const [skippingAuthorizationKey, setSkippingAuthorizationKey] = useState<
+    string | null
+  >(null);
   const activeChatIdRef = useRef(activeChat?.id ?? chatId ?? null);
   const eventIndexRef = useRef(activeChat?.events.length ?? 0);
   const eventIndexChatIdRef = useRef(activeChat?.id ?? chatId ?? null);
@@ -724,15 +765,14 @@ export function AgentChatSession({
   const streamEventsRef = useRef<HandleMessageStreamEvent[]>([]);
   const localEventsRef = useRef<HandleMessageStreamEvent[]>([]);
   const finalizeTimerRef = useRef<number | null>(null);
-  const onSessionStartedRef = useRef<(session: SessionState) => Promise<void> | void>(
-    () => {},
-  );
+  const onSessionStartedRef = useRef<
+    (session: SessionState) => Promise<void> | void
+  >(() => {});
   const persistedSessionRef = useRef<PersistedClientSession | null>(null);
   persistedSessionRef.current ??= createPersistedClientSession({
     initialSession: activeChat?.session,
     onSessionStarted: (session) => onSessionStartedRef.current(session),
   });
-  const isSetupReady = setupStatus.appReady;
   const router = useRouter();
 
   const clearFinalizeTimer = useCallback(() => {
@@ -823,9 +863,10 @@ export function AgentChatSession({
           title: currentTitleRef.current,
         });
         onPendingUserMessageSettled?.();
-
       } catch (error) {
-        setClientError(error instanceof Error ? error.message : "Failed to save chat.");
+        setClientError(
+          error instanceof Error ? error.message : "Failed to save chat.",
+        );
       } finally {
         finishFinalizingTurn();
       }
@@ -875,7 +916,9 @@ export function AgentChatSession({
         eventIndex,
       }).catch((error) => {
         setClientError(
-          error instanceof Error ? error.message : "Failed to save stream progress.",
+          error instanceof Error
+            ? error.message
+            : "Failed to save stream progress.",
         );
       });
     },
@@ -897,7 +940,9 @@ export function AgentChatSession({
         });
       } catch (error) {
         setClientError(
-          error instanceof Error ? error.message : "Failed to save session state.",
+          error instanceof Error
+            ? error.message
+            : "Failed to save session state.",
         );
       }
     },
@@ -915,7 +960,8 @@ export function AgentChatSession({
     },
   });
 
-  const hasResumeOverlay = isResuming || (resumedEvents.length > 0 && streamEvents.length === 0);
+  const hasResumeOverlay =
+    isResuming || (resumedEvents.length > 0 && streamEvents.length === 0);
   const resumedEventLog = useMemo(
     () => [...(activeChat?.events ?? []), ...resumedEvents],
     [activeChat?.events, resumedEvents],
@@ -929,18 +975,26 @@ export function AgentChatSession({
     () => mergeLocalEvents(baseDisplayEvents, localEvents),
     [baseDisplayEvents, localEvents],
   );
-  const displayData = useMemo(() => reduceEventsToMessageData(displayEvents), [displayEvents]);
+  const displayData = useMemo(
+    () => reduceEventsToMessageData(displayEvents),
+    [displayEvents],
+  );
   const displayMessages = displayData.messages;
   const displayChatId = chatId ?? activeChatId ?? "new";
   const hasLocalPendingUserMessage = Boolean(localPendingUserMessage);
   const pendingAuthorizations = getPendingAuthorizations(displayEvents);
   const isWaitingForAuthorization = pendingAuthorizations.length > 0;
-  const hasOpenTurn = useMemo(() => hasOpenChatTurn(displayEvents), [displayEvents]);
+  const hasOpenTurn = useMemo(
+    () => hasOpenChatTurn(displayEvents),
+    [displayEvents],
+  );
   const isBusy =
     isResuming ||
     hasLocalPendingUserMessage ||
     (!isWaitingForAuthorization &&
-      (hasOpenTurn || agent.status === "submitted" || agent.status === "streaming"));
+      (hasOpenTurn ||
+        agent.status === "submitted" ||
+        agent.status === "streaming"));
   const isTurnBlocked = isBusy || isFinalizingTurn;
   const pendingMessage = pendingUserMessage
     ? createPendingUserMessage(displayChatId, pendingUserMessage)
@@ -956,7 +1010,7 @@ export function AgentChatSession({
     ? getConnectionAuthorizationDisabledReason(pendingAuthorizations)
     : isFinalizingTurn
       ? "Finishing response."
-    : undefined;
+      : undefined;
   const visibleMessages = appendPendingUserMessages(displayMessages, [
     pendingMessage,
     localPendingMessage,
@@ -968,10 +1022,13 @@ export function AgentChatSession({
   const isChatRoute = Boolean(shellActiveChatId || chatId);
   const showThinking =
     !isWaitingForAuthorization &&
-    (Boolean(pendingMessage || localPendingMessage) || hasOpenTurn || isTurnBlocked);
+    (Boolean(pendingMessage || localPendingMessage) ||
+      hasOpenTurn ||
+      isTurnBlocked);
   const thinkingPresence = useThinkingPresence(showThinking);
   const displayError = clientError ?? agent.error?.message ?? null;
-  const toastError = displayError && dismissedError !== displayError ? displayError : null;
+  const toastError =
+    displayError && dismissedError !== displayError ? displayError : null;
 
   const resetSession = useCallback(() => {
     agent.reset();
@@ -1005,7 +1062,9 @@ export function AgentChatSession({
       }
 
       if (!activeChatIdRef.current) {
-        const created = await createChatAction({ pendingUserMessage: firstMessage });
+        const created = await createChatAction({
+          pendingUserMessage: firstMessage,
+        });
 
         touchChat(created);
         setActiveChatId(created.id);
@@ -1041,7 +1100,9 @@ export function AgentChatSession({
 
       if (isWaitingForAuthorization) {
         draftHandlers.restoreDraft(message);
-        setClientError(disabledReason ?? "Connect the requested service before continuing.");
+        setClientError(
+          disabledReason ?? "Connect the requested service before continuing.",
+        );
         return;
       }
 
@@ -1060,11 +1121,6 @@ export function AgentChatSession({
       let ready = false;
 
       setClientError(null);
-
-      if (!isSetupReady) {
-        setClientError("Finish the required Neon and Better Auth setup before chatting.");
-        return;
-      }
 
       if (!viewer) {
         requestSignIn(message);
@@ -1111,7 +1167,9 @@ export function AgentChatSession({
         touchChat(updated);
       } catch (error) {
         restoreAfterFailedSend(
-          error instanceof Error ? error.message : "Failed to save pending message.",
+          error instanceof Error
+            ? error.message
+            : "Failed to save pending message.",
         );
         return;
       }
@@ -1129,7 +1187,9 @@ export function AgentChatSession({
 
         stopFinalizingTurn();
         void clearChatPendingMessageAction(chatId);
-        restoreAfterFailedSend(error instanceof Error ? error.message : "Failed to send message.");
+        restoreAfterFailedSend(
+          error instanceof Error ? error.message : "Failed to send message.",
+        );
       }
     },
     [
@@ -1137,7 +1197,6 @@ export function AgentChatSession({
       clearLocalPendingUserMessage,
       disabledReason,
       enabledConnections,
-      isSetupReady,
       isTurnBlocked,
       isWaitingForAuthorization,
       prepareSend,
@@ -1185,10 +1244,19 @@ export function AgentChatSession({
         await agent.send({ inputResponses: responses });
       } catch (error) {
         stopFinalizingTurn();
-        setClientError(error instanceof Error ? error.message : "Failed to send response.");
+        setClientError(
+          error instanceof Error ? error.message : "Failed to send response.",
+        );
       }
     },
-    [agent, isTurnBlocked, requestSignIn, startFinalizingTurn, stopFinalizingTurn, viewer],
+    [
+      agent,
+      isTurnBlocked,
+      requestSignIn,
+      startFinalizingTurn,
+      stopFinalizingTurn,
+      viewer,
+    ],
   );
 
   const handleSkipAuthorization = useCallback(
@@ -1272,7 +1340,9 @@ export function AgentChatSession({
         localEventsRef.current = revertedEvents;
         setLocalEvents(revertedEvents);
         setClientError(
-          error instanceof Error ? error.message : "Failed to skip authorization.",
+          error instanceof Error
+            ? error.message
+            : "Failed to skip authorization.",
         );
       } finally {
         setSkippingAuthorizationKey(null);
@@ -1346,11 +1416,10 @@ export function AgentChatSession({
     const abortController = new AbortController();
     const existingEvents = activeChat.events;
     const startIndex = existingEvents.length;
-    const shouldIgnoreLeadingWaiting =
-      !hasLatestUserMessage(
-        reduceEventsToMessageData(existingEvents).messages,
-        pendingUserMessage,
-      );
+    const shouldIgnoreLeadingWaiting = !hasLatestUserMessage(
+      reduceEventsToMessageData(existingEvents).messages,
+      pendingUserMessage,
+    );
     const session = createPersistedClientSession({
       initialSession: activeChat.session,
       onSessionStarted: persistSessionState,
@@ -1432,7 +1501,9 @@ export function AgentChatSession({
         onPendingUserMessageSettled?.();
       } catch (error) {
         if (!cancelled && !isAbortError(error)) {
-          setClientError(error instanceof Error ? error.message : "Failed to resume stream.");
+          setClientError(
+            error instanceof Error ? error.message : "Failed to resume stream.",
+          );
         }
       } finally {
         if (!cancelled) {
@@ -1482,11 +1553,7 @@ export function AgentChatSession({
     ) {
       onPendingUserMessageSettled?.(pendingUserMessage);
     }
-  }, [
-    displayMessages,
-    onPendingUserMessageSettled,
-    pendingUserMessage,
-  ]);
+  }, [displayMessages, onPendingUserMessageSettled, pendingUserMessage]);
 
   useEffect(() => {
     onControllerChange(
@@ -1498,7 +1565,7 @@ export function AgentChatSession({
       {
         disabledReason,
         isBusy,
-        isDisabled: !isSetupReady || isWaitingForAuthorization || isFinalizingTurn,
+        isDisabled: isWaitingForAuthorization || isFinalizingTurn,
         isEmpty,
       },
     );
@@ -1508,7 +1575,6 @@ export function AgentChatSession({
     isBusy,
     isFinalizingTurn,
     isEmpty,
-    isSetupReady,
     isWaitingForAuthorization,
     onControllerChange,
     resetSession,
@@ -1534,9 +1600,7 @@ export function AgentChatSession({
         <EmptyChatBody composer={emptyComposer} />
       ) : (
         <>
-          {isChatRoute ? (
-            <SessionHeader />
-          ) : null}
+          {isChatRoute ? <SessionHeader /> : null}
           {isEmpty ? (
             <BlankChatBody />
           ) : (
@@ -1547,11 +1611,11 @@ export function AgentChatSession({
                     canRespond={
                       !isTurnBlocked &&
                       !isWaitingForAuthorization &&
-                      Boolean(viewer) &&
-                      isSetupReady
+                      Boolean(viewer)
                     }
                     isStreaming={
-                      agent.status === "streaming" && index === visibleMessages.length - 1
+                      agent.status === "streaming" &&
+                      index === visibleMessages.length - 1
                     }
                     key={message.id}
                     message={message}
@@ -1650,7 +1714,9 @@ function ConnectionAuthorizationPrompt({
 }: {
   readonly authorization: PendingConnectionAuthorization;
   readonly isSkipping: boolean;
-  readonly onSkip: (authorization: PendingConnectionAuthorization) => Promise<void>;
+  readonly onSkip: (
+    authorization: PendingConnectionAuthorization,
+  ) => Promise<void>;
 }) {
   return (
     <article aria-live="polite" className="flex w-full justify-start px-3">
@@ -1660,18 +1726,16 @@ function ConnectionAuthorizationPrompt({
             <PlugIcon className="size-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-medium text-foreground">Connect {authorization.displayName}</p>
+            <p className="font-medium text-foreground">
+              Connect {authorization.displayName}
+            </p>
             <p className="mt-1 text-muted-foreground">
               {authorization.description}
             </p>
             <div className="mt-2.5 flex items-center gap-2">
               {authorization.url ? (
                 <Button asChild size="xs" type="button">
-                  <a
-                    href={authorization.url}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
+                  <a href={authorization.url} rel="noreferrer" target="_blank">
                     Connect
                     <ExternalLinkIcon className="size-3" />
                   </a>
@@ -1796,7 +1860,9 @@ function appendUniqueStreamEvent(
   events: readonly HandleMessageStreamEvent[],
   event: HandleMessageStreamEvent,
 ): HandleMessageStreamEvent[] {
-  if (events.some((existingEvent) => areSameStreamEvent(existingEvent, event))) {
+  if (
+    events.some((existingEvent) => areSameStreamEvent(existingEvent, event))
+  ) {
     return events as HandleMessageStreamEvent[];
   }
 
@@ -1815,7 +1881,10 @@ function preserveKnownInitialEvents(
     return knownEvents;
   }
 
-  const sharedPrefixLength = countSharedEventPrefix(snapshotEvents, knownEvents);
+  const sharedPrefixLength = countSharedEventPrefix(
+    snapshotEvents,
+    knownEvents,
+  );
 
   if (sharedPrefixLength === knownEvents.length) {
     return snapshotEvents;
@@ -1864,7 +1933,11 @@ function areEqualJsonValues(left: unknown, right: unknown): boolean {
   }
 
   if (Array.isArray(left) || Array.isArray(right)) {
-    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+    if (
+      !Array.isArray(left) ||
+      !Array.isArray(right) ||
+      left.length !== right.length
+    ) {
       return false;
     }
 
@@ -1912,7 +1985,11 @@ function appendPendingUserMessages(
   for (const pendingMessage of pendingMessages) {
     const pendingText = pendingMessage ? getMessageText(pendingMessage) : null;
 
-    if (!pendingMessage || !pendingText || hasLatestUserMessage(nextMessages, pendingText)) {
+    if (
+      !pendingMessage ||
+      !pendingText ||
+      hasLatestUserMessage(nextMessages, pendingText)
+    ) {
       continue;
     }
 
@@ -2027,7 +2104,9 @@ function ThinkingMessage({ isVisible }: { readonly isVisible: boolean }) {
       aria-live={isVisible ? "polite" : "off"}
       className={[
         "flex w-full justify-start overflow-hidden transition-[opacity,transform,max-height] duration-200 ease-out",
-        isVisible ? "max-h-8 translate-y-0 opacity-100" : "max-h-0 -translate-y-1 opacity-0",
+        isVisible
+          ? "max-h-8 translate-y-0 opacity-100"
+          : "max-h-0 -translate-y-1 opacity-0",
       ].join(" ")}
       role="status"
     >
@@ -2051,14 +2130,6 @@ export function EmptyChatBody({ composer }: { readonly composer?: ReactNode }) {
     <div className="flex min-h-0 flex-1 flex-col pt-14 md:pt-8">
       <div className="flex min-h-0 flex-1 items-center justify-center">
         <div className="w-full max-w-2xl space-y-8 sm:space-y-10 md:space-y-12">
-          <h1 className="flex justify-center">
-            <img
-              alt="eve"
-              className="size-16 select-none invert sm:size-20 md:size-24 dark:invert-0"
-              draggable={false}
-              src="/eve.svg"
-            />
-          </h1>
           {composer}
         </div>
       </div>
@@ -2098,69 +2169,17 @@ export function ErrorToast({
   );
 }
 
-export function ComposerFooterControls({
-  setupStatus,
-}: {
-  readonly setupStatus: SetupStatus;
-}) {
+export function ComposerFooterControls() {
   const { enabledConnections, setConnectionEnabled } = useChatShell();
 
   return (
     <div className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
-      <ComposerHint setupStatus={setupStatus} />
       <IntegrationsMenu
         enabledConnections={enabledConnections}
         onConnectionEnabledChange={setConnectionEnabled}
-        setupStatus={setupStatus}
       />
     </div>
   );
-}
-
-function ComposerHint({ setupStatus }: { readonly setupStatus: SetupStatus }) {
-  if (!setupStatus.appReady) {
-    const reason = getSetupRequiredReason(setupStatus);
-
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className="inline-flex h-8 min-w-0 max-w-full items-center gap-1 rounded-md px-2 text-[15px] text-muted-foreground/50"
-            tabIndex={0}
-          >
-            <LockIcon className="size-3.5 shrink-0" />
-            <span className="truncate">Setup required</span>
-            <ChevronDownIcon className="size-3.5 shrink-0" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="top">{reason}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return null;
-}
-
-function getSetupRequiredReason(setupStatus: SetupStatus) {
-  if (!setupStatus.databaseConfigured) {
-    return "Connect Neon Postgres before chatting.";
-  }
-
-  if (!setupStatus.databaseSchemaReady) {
-    return "Run database migrations before chatting.";
-  }
-
-  if (!setupStatus.authReady) {
-    return setupStatus.missing.length
-      ? `Finish auth setup. Missing: ${setupStatus.missing.join(", ")}.`
-      : "Finish auth setup before chatting.";
-  }
-
-  if (!setupStatus.rateLimitReady) {
-    return "Provision Upstash Redis before chatting.";
-  }
-
-  return "Finish setup before chatting.";
 }
 
 function hasLatestUserMessage(

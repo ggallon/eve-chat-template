@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { parseSetCookieHeader, stripSecureCookiePrefix } from "better-auth/cookies";
+import {
+  parseSetCookieHeader,
+  stripSecureCookiePrefix,
+} from "better-auth/cookies";
 import { auth } from "@/lib/auth";
 import {
   AUTH_HINT_COOKIE_MAX_AGE,
@@ -7,7 +10,6 @@ import {
   AUTH_HINT_COOKIE_VALUE,
   isSecureAuthHintCookie,
 } from "@/lib/auth-hint";
-import { getSetupStatus } from "@/lib/setup";
 
 const BETTER_AUTH_SESSION_COOKIE_NAME = "better-auth.session_token";
 
@@ -20,20 +22,6 @@ export async function POST(request: Request) {
 }
 
 async function handleAuth(request: Request) {
-  const setupStatus = await getSetupStatus();
-
-  if (!setupStatus.databaseConfigured) {
-    return redirectToAuthError(request, "database_not_configured");
-  }
-
-  if (!setupStatus.databaseSchemaReady) {
-    return redirectToAuthError(request, "database_migrations_missing");
-  }
-
-  if (!setupStatus.authReady) {
-    return redirectToAuthError(request, "auth_env_missing");
-  }
-
   const response = await auth.handler(request);
 
   return withAuthHintCookie(response);
@@ -47,7 +35,9 @@ function redirectToAuthError(request: Request, error: string) {
 }
 
 function withAuthHintCookie(response: Response) {
-  const authState = getAuthStateFromSetCookie(response.headers.get("set-cookie"));
+  const authState = getAuthStateFromSetCookie(
+    response.headers.get("set-cookie"),
+  );
 
   if (!authState) {
     return response;
@@ -96,5 +86,7 @@ function getAuthStateFromSetCookie(setCookie: string | null) {
 
   const [, attributes] = sessionCookie;
 
-  return attributes.value && attributes["max-age"] !== 0 ? "logged-in" : "logged-out";
+  return attributes.value && attributes["max-age"] !== 0
+    ? "logged-in"
+    : "logged-out";
 }

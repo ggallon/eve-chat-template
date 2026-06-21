@@ -1,15 +1,8 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import type { SetupStatus, Viewer } from "@/lib/chat/types";
-import { getSetupStatus } from "@/lib/setup";
+import type { Viewer } from "@/lib/chat/types";
 
-export async function getServerViewer(setupStatus?: SetupStatus): Promise<Viewer | null> {
-  const status = setupStatus ?? (await getSetupStatus());
-
-  if (!status.appReady) {
-    return null;
-  }
-
+export async function getServerViewer(): Promise<Viewer | null> {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

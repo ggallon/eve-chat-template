@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
 import { getChatForUser } from "@/lib/db/queries";
 import { getServerViewer } from "@/lib/session";
-import { getSetupStatus } from "@/lib/setup";
 
 export async function GET(
   _request: Request,
   { params }: { readonly params: Promise<{ readonly id: string }> },
 ) {
-  const setupStatus = await getSetupStatus();
-
-  if (!setupStatus.appReady) {
-    return NextResponse.json({ chat: null }, { status: 503 });
-  }
-
-  const viewer = await getServerViewer(setupStatus);
-
+  const viewer = await getServerViewer();
   if (!viewer) {
     return NextResponse.json({ chat: null }, { status: 401 });
   }

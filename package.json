@@ -20,13 +20,8 @@
     "eve:build": "eve build",
     "eve:dev": "eve dev"
   },
-  "pnpm": {
-    "patchedDependencies": {
-      "eve@0.8.3": "patches/eve@0.8.3.patch"
-    }
-  },
   "dependencies": {
-    "@neondatabase/serverless": "1.0.2",
+    "@neondatabase/serverless": "1.1.0",
     "@shikijs/core": "4.1.0",
     "@shikijs/engine-javascript": "4.1.0",
     "@shikijs/engine-oniguruma": "4.1.0",
@@ -34,35 +29,35 @@
     "@streamdown/code": "1.1.1",
     "@streamdown/math": "1.0.2",
     "@streamdown/mermaid": "1.0.2",
-    "@tailwindcss/postcss": "4.3.0",
+    "@tailwindcss/postcss": "4.3.1",
     "@upstash/redis": "1.38.0",
-    "@vercel/connect": "0.2.4",
-    "ai": "7.0.0-canary.171",
-    "better-auth": "1.5.5",
+    "@vercel/connect": "0.2.6",
+    "ai": "7.0.0-beta.178",
+    "better-auth": "1.6.20",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
-    "drizzle-orm": "0.45.1",
+    "drizzle-orm": "0.45.2",
     "eve": "latest",
-    "lucide-react": "1.16.0",
-    "next": "16.2.6",
-    "radix-ui": "1.4.3",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
+    "lucide-react": "1.21.0",
+    "next": "16.2.9",
+    "radix-ui": "1.6.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "shiki": "4.1.0",
     "streamdown": "2.5.0",
     "tailwind-merge": "3.6.0",
-    "tailwindcss": "4.3.0",
-    "use-stick-to-bottom": "1.1.4",
+    "tailwindcss": "4.3.1",
+    "use-stick-to-bottom": "1.1.6",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
-    "@types/react": "19.2.15",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260523.1",
-    "drizzle-kit": "0.31.9",
+    "@typescript/native-preview": "7.0.0-dev.20260620.1",
+    "drizzle-kit": "0.31.10",
     "microsandbox": "^0.5.7",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   }
 }
