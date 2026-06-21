@@ -1,8 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  AUTH_HINT_COOKIE_NAME,
-  AUTH_HINT_COOKIE_VALUE,
-} from "@/lib/auth-hint";
+import { AUTH_HINT_COOKIE_NAME, AUTH_HINT_COOKIE_VALUE } from "@/lib/auth-hint";
 
 const AUTH_DISPLAY_ATTRIBUTE = "data-eve-auth-display";
 
@@ -12,7 +9,7 @@ const authDisplayScript = `
     const loggedIn = document.cookie
       .split("; ")
       .some((cookie) => cookie === ${JSON.stringify(
-        `${AUTH_HINT_COOKIE_NAME}=${AUTH_HINT_COOKIE_VALUE}`,
+        `${AUTH_HINT_COOKIE_NAME}=${AUTH_HINT_COOKIE_VALUE}`
       )});
     document.documentElement.dataset.eveAuthDisplay = loggedIn
       ? "logged-in"
@@ -43,7 +40,11 @@ html[${AUTH_DISPLAY_ATTRIBUTE}="logged-out"] [${AUTH_DISPLAY_ATTRIBUTE}="logged-
   );
 }
 
-export function AuthDisplayLoggedIn({ children }: { readonly children: ReactNode }) {
+export function AuthDisplayLoggedIn({
+  children,
+}: {
+  readonly children: ReactNode;
+}) {
   return (
     <div className="contents" data-eve-auth-display="logged-in">
       {children}
@@ -51,7 +52,11 @@ export function AuthDisplayLoggedIn({ children }: { readonly children: ReactNode
   );
 }
 
-export function AuthDisplayLoggedOut({ children }: { readonly children: ReactNode }) {
+export function AuthDisplayLoggedOut({
+  children,
+}: {
+  readonly children: ReactNode;
+}) {
   return (
     <div className="contents" data-eve-auth-display="logged-out">
       {children}

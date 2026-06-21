@@ -3,9 +3,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  type AgentChatControllerStatus,
   ComposerFooterControls,
   ErrorToast,
-  type AgentChatControllerStatus,
 } from "@/app/_components/agent-chat";
 import { useChatShell } from "@/app/_components/chat-shell-context";
 import { ChatComposer } from "@/components/chat/composer";
@@ -91,7 +91,7 @@ export function HomeChatPage() {
       const provisionalChatId = createProvisionalChatId();
       const didStoreMessage = writePendingChatMessage(
         provisionalChatId,
-        message,
+        message
       );
 
       if (!didStoreMessage) {
@@ -105,7 +105,7 @@ export function HomeChatPage() {
       setActiveChatId(provisionalChatId);
       router.push(`/chat/${provisionalChatId}`, { scroll: false });
     },
-    [requestSignIn, router, setActiveChatId, submitting, viewer],
+    [requestSignIn, router, setActiveChatId, submitting, viewer]
   );
 
   const composerDisabledReason = getHomeComposerDisabledReason({
@@ -157,5 +157,5 @@ function getHomeComposerDisabledReason({
     return "Preparing chat.";
   }
 
-  return undefined;
+  return;
 }

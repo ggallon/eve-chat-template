@@ -28,7 +28,7 @@ function resolveMetadataBase() {
   return new URL(
     configuredUrl.startsWith("http")
       ? configuredUrl
-      : `https://${configuredUrl}`,
+      : `https://${configuredUrl}`
   );
 }
 

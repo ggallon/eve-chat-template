@@ -1,7 +1,13 @@
 "use client";
 
 import { CheckIcon, CopyIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 
 const EVE_URL = "https://vercel.com/eve";
@@ -115,9 +121,10 @@ export function TemplateFooterLinks() {
   useEffect(() => clearResetTimer, [clearResetTimer]);
 
   return (
-    <footer className="flex shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 px-2 text-center text-[11px] leading-4 text-muted-foreground/50 sm:text-xs">
+    <footer className="flex shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 px-2 text-center text-[11px] text-muted-foreground/50 leading-4 sm:text-xs">
       <span>
-        Build your own chat agent with <FooterLink href={EVE_URL}>eve</FooterLink>:
+        Build your own chat agent with{" "}
+        <FooterLink href={EVE_URL}>eve</FooterLink>:
       </span>
       <span>
         <FooterLink href={GITHUB_URL}>GitHub</FooterLink>,
@@ -128,8 +135,8 @@ export function TemplateFooterLinks() {
       <button
         aria-label={copied ? "Copied setup prompt" : "Copy setup prompt"}
         className={cn(
-          "inline-grid cursor-pointer appearance-none grid-cols-[0.75rem_auto] items-center gap-1 rounded-sm border border-border/40 bg-transparent px-1.5 py-0.5 text-[inherit] leading-[inherit] font-[inherit] text-muted-foreground/60 transition-colors hover:border-border/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none",
-          copied && "border-foreground/25 text-foreground",
+          "inline-grid cursor-pointer appearance-none grid-cols-[0.75rem_auto] items-center gap-1 rounded-sm border border-border/40 bg-transparent px-1.5 py-0.5 font-[inherit] text-[inherit] text-muted-foreground/60 leading-[inherit] transition-colors hover:border-border/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          copied && "border-foreground/25 text-foreground"
         )}
         onClick={handleCopyPrompt}
         title={copied ? "Copied" : "Copy setup prompt"}

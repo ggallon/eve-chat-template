@@ -3,6 +3,7 @@
 import { CheckIcon, MenuIcon, PanelLeftIcon, UploadIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  type ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -10,9 +11,7 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
-import { deleteChatAction } from "@/app/actions/chat";
 import {
   CHAT_BOOTSTRAP_SYNC_EVENT,
   type ChatBootstrapSyncDetail,
@@ -21,6 +20,7 @@ import {
   ChatShellProvider,
   type EnabledConnections,
 } from "@/app/_components/chat-shell-context";
+import { deleteChatAction } from "@/app/actions/chat";
 import { AuthDisplayLoggedOut } from "@/components/auth/auth-display";
 import { SignInModal } from "@/components/auth/sign-in-modal";
 import { ChatSidebar } from "@/components/chat/sidebar";
@@ -32,9 +32,9 @@ import {
 } from "@/components/ui/tooltip";
 import {
   parseSidebarOpen,
-  serializeSidebarOpen,
   SIDEBAR_COOKIE_MAX_AGE,
   SIDEBAR_COOKIE_NAME,
+  serializeSidebarOpen,
 } from "@/lib/chat/sidebar-state";
 import type { ChatListItem, Viewer } from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
@@ -107,7 +107,7 @@ export function AgentChatShell({
         [connection]: enabled,
       }));
     },
-    [],
+    []
   );
 
   const touchChat = useCallback((chat: ChatListItem) => {
@@ -127,7 +127,7 @@ export function AgentChatShell({
 
   const updateChatTitle = useCallback((chatId: string, title: string) => {
     setHistory((items) =>
-      items.map((item) => (item.id === chatId ? { ...item, title } : item)),
+      items.map((item) => (item.id === chatId ? { ...item, title } : item))
     );
   }, []);
 
@@ -165,7 +165,7 @@ export function AgentChatShell({
         // errors are shown by the chat surface where the user is working.
       }
     },
-    [removeChat, startNewChat],
+    [removeChat, startNewChat]
   );
 
   const loadMoreChats = useCallback(async () => {
@@ -179,7 +179,7 @@ export function AgentChatShell({
 
     try {
       const response = await fetch(
-        `/api/chats?cursor=${encodeURIComponent(cursor)}`,
+        `/api/chats?cursor=${encodeURIComponent(cursor)}`
       );
 
       if (!response.ok) {
@@ -218,13 +218,13 @@ export function AgentChatShell({
     }) => {
       setViewerState(incomingViewer);
       setHistory((items) =>
-        incomingViewer ? mergeChatHistory(chats, items) : [],
+        incomingViewer ? mergeChatHistory(chats, items) : []
       );
       setNextCursor(incomingNextCursor);
       setHistoryLoading(false);
       cursorRef.current = incomingNextCursor;
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -243,7 +243,7 @@ export function AgentChatShell({
     return () => {
       window.removeEventListener(
         CHAT_BOOTSTRAP_SYNC_EVENT,
-        handleBootstrapSync,
+        handleBootstrapSync
       );
     };
   }, [setBootstrapData]);
@@ -271,7 +271,7 @@ export function AgentChatShell({
       touchChat,
       updateChatTitle,
       viewerState,
-    ],
+    ]
   );
 
   const sidebar = (
@@ -311,11 +311,11 @@ export function AgentChatShell({
       <SidebarCookieScript />
       <div className="flex h-dvh overflow-hidden bg-background text-foreground">
         <div
-          data-desktop-sidebar
           className={cn(
             "hidden shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out md:block",
-            desktopSidebarOpen ? "w-64" : "w-0",
+            desktopSidebarOpen ? "w-64" : "w-0"
           )}
+          data-desktop-sidebar
         >
           {sidebar}
         </div>
@@ -333,7 +333,7 @@ export function AgentChatShell({
               >
                 <MenuIcon className="size-4" />
               </Button>
-              {!desktopSidebarOpen ? (
+              {desktopSidebarOpen ? null : (
                 <Button
                   aria-label="Open sidebar"
                   className="hidden md:inline-flex"
@@ -344,7 +344,7 @@ export function AgentChatShell({
                 >
                   <PanelLeftIcon className="size-4" />
                 </Button>
-              ) : null}
+              )}
             </div>
             {topRightActions}
           </div>
@@ -357,7 +357,7 @@ export function AgentChatShell({
             "fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden",
             mobileSidebarOpen
               ? "pointer-events-auto opacity-100"
-              : "pointer-events-none opacity-0",
+              : "pointer-events-none opacity-0"
           )}
           onClick={() => setMobileSidebarOpen(false)}
         />
@@ -386,7 +386,7 @@ export function AgentChatShell({
             if (draftBeforeSignIn) {
               window.sessionStorage.setItem(
                 "eve-chat-draft",
-                draftBeforeSignIn,
+                draftBeforeSignIn
               );
             }
           }}
@@ -406,7 +406,7 @@ function SidebarCookieScript() {
 
 function readSidebarCookie() {
   const match = document.cookie.match(
-    new RegExp(`(?:^|; )${SIDEBAR_COOKIE_NAME}=([^;]*)`),
+    new RegExp(`(?:^|; )${SIDEBAR_COOKIE_NAME}=([^;]*)`)
   );
 
   if (!match?.[1]) {
@@ -492,7 +492,7 @@ function AuthTopActions({ onSignIn }: { readonly onSignIn: () => void }) {
   return (
     <div className="flex max-w-[calc(100vw-4rem)] items-center gap-1.5">
       <Button
-        className="h-8 rounded-md border border-border bg-background/70 px-3 text-sm font-medium text-foreground shadow-sm hover:bg-muted/60"
+        className="h-8 rounded-md border border-border bg-background/70 px-3 font-medium text-foreground text-sm shadow-sm hover:bg-muted/60"
         onClick={onSignIn}
         type="button"
         variant="outline"
@@ -500,7 +500,7 @@ function AuthTopActions({ onSignIn }: { readonly onSignIn: () => void }) {
         Log In
       </Button>
       <Button
-        className="h-8 rounded-md bg-foreground px-3 text-sm font-medium text-background hover:bg-foreground/90"
+        className="h-8 rounded-md bg-foreground px-3 font-medium text-background text-sm hover:bg-foreground/90"
         onClick={onSignIn}
         type="button"
       >
@@ -512,7 +512,7 @@ function AuthTopActions({ onSignIn }: { readonly onSignIn: () => void }) {
 
 function mergeChatHistory(
   incoming: readonly ChatListItem[],
-  current: readonly ChatListItem[],
+  current: readonly ChatListItem[]
 ) {
   const incomingById = new Map(incoming.map((item) => [item.id, item]));
   const currentIds = new Set(current.map((item) => item.id));

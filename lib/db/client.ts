@@ -10,7 +10,7 @@ export function getDb() {
 
     if (!url) {
       throw new Error(
-        "DATABASE_URL is required. Add Neon to this Vercel project first.",
+        "DATABASE_URL is required. Add Neon to this Vercel project first."
       );
     }
 
@@ -56,11 +56,11 @@ export async function isDatabaseSchemaReady() {
     const result = rows[0];
     const ready = Boolean(
       result?.account_ready &&
-      result.chat_ready &&
-      result.chat_event_ready &&
-      result.session_ready &&
-      result.user_ready &&
-      result.verification_ready,
+        result.chat_ready &&
+        result.chat_event_ready &&
+        result.session_ready &&
+        result.user_ready &&
+        result.verification_ready
     );
 
     return ready;

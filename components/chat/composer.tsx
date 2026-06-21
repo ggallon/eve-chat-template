@@ -2,13 +2,13 @@
 
 import { ArrowUpIcon, Loader2Icon, SquareIcon } from "lucide-react";
 import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  type ReactNode,
   useCallback,
   useEffect,
   useId,
   useRef,
-  type ChangeEvent,
-  type KeyboardEvent,
-  type ReactNode,
 } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,7 +89,7 @@ export function ChatComposer({
       event.preventDefault();
       submitValue();
     },
-    [submitValue],
+    [submitValue]
   );
 
   const handleKeyDown = useCallback(
@@ -99,14 +99,14 @@ export function ChatComposer({
         submitValue();
       }
     },
-    [submitValue],
+    [submitValue]
   );
 
   const form = (
     <form
       className={cn(
         "min-w-0 rounded-[14px] border border-border/80 bg-card/95 shadow-sm transition-colors focus-within:border-border focus-within:ring-[1px] focus-within:ring-foreground/5 dark:bg-muted/45 dark:focus-within:ring-white/5",
-        className,
+        className
       )}
       data-chat-composer
       onSubmit={handleSubmit}
@@ -156,7 +156,7 @@ export function ChatComposer({
           ) : (
             <Button
               aria-label="Send message"
-              className="size-6 cursor-pointer rounded-md bg-foreground text-background hover:bg-foreground/90 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-30"
+              className="size-6 cursor-pointer rounded-md bg-foreground text-background hover:bg-foreground/90 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-30"
               disabled={
                 disabled || trimmedValue.length === 0 || isOverMaxLength
               }
@@ -171,7 +171,7 @@ export function ChatComposer({
     </form>
   );
 
-  if (!disabledReason || (!disabled && !isBusy && !isPreparing)) {
+  if (!(disabledReason && (disabled || isBusy || isPreparing))) {
     return form;
   }
 

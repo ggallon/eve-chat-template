@@ -1,8 +1,8 @@
 "use client";
 
+import { Loader2Icon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { useState } from "react";
-import { Loader2Icon } from "lucide-react";
 import { VercelIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -62,7 +62,7 @@ export function SignInButton({
 }
 
 function resolveCallbackPath(path: string | undefined) {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+  if (!(path && path.startsWith("/")) || path.startsWith("//")) {
     return "/";
   }
 

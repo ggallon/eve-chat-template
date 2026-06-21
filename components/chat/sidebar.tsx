@@ -64,7 +64,7 @@ export function ChatSidebar({
   useEffect(() => {
     const sentinel = sentinelRef.current;
 
-    if (!sentinel || !hasMoreChats || !onLoadMoreChats) {
+    if (!(sentinel && hasMoreChats && onLoadMoreChats)) {
       return;
     }
 
@@ -74,7 +74,7 @@ export function ChatSidebar({
           void onLoadMoreChats();
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     observer.observe(sentinel);
@@ -85,8 +85,8 @@ export function ChatSidebar({
   return (
     <aside
       className={cn(
-        "flex h-full w-64 shrink-0 flex-col border-r border-border bg-background",
-        className,
+        "flex h-full w-64 shrink-0 flex-col border-border border-r bg-background",
+        className
       )}
     >
       <div className="flex flex-col gap-1 px-2 pt-2 pb-2">
@@ -118,7 +118,7 @@ export function ChatSidebar({
         <button
           className={cn(
             "flex h-8 items-center gap-2 rounded-md px-2 text-left text-sm transition-colors",
-            newSessionActive ? activeRowClass : inactiveRowClass,
+            newSessionActive ? activeRowClass : inactiveRowClass
           )}
           onClick={() => {
             onNewChat();
@@ -141,7 +141,7 @@ export function ChatSidebar({
                 <div
                   className={cn(
                     "group/session relative mb-0.5 rounded-md transition-colors hover:bg-muted/50 hover:text-foreground",
-                    active ? activeRowClass : inactiveRowClass,
+                    active ? activeRowClass : inactiveRowClass
                   )}
                   key={chat.id}
                 >
@@ -159,7 +159,7 @@ export function ChatSidebar({
                     <DropdownMenuTrigger asChild>
                       <Button
                         aria-label="Chat actions"
-                        className="absolute top-1/2 right-1 -translate-y-1/2 opacity-0 transition-opacity hover:bg-muted group-hover/session:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                        className="absolute top-1/2 right-1 -translate-y-1/2 opacity-0 transition-opacity hover:bg-muted focus-visible:opacity-100 group-hover/session:opacity-100 data-[state=open]:opacity-100"
                         size="icon-xs"
                         type="button"
                         variant="ghost"
@@ -186,12 +186,12 @@ export function ChatSidebar({
           </div>
         ) : null}
         {hasMoreChats ? (
-          <div ref={sentinelRef} className="px-2 py-2">
+          <div className="px-2 py-2" ref={sentinelRef}>
             {isLoadingMore ? (
-              <p className="text-xs text-muted-foreground">Loading more...</p>
+              <p className="text-muted-foreground text-xs">Loading more...</p>
             ) : (
               <button
-                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                className="text-muted-foreground text-xs transition-colors hover:text-foreground"
                 onClick={() => void onLoadMoreChats?.()}
                 type="button"
               >
@@ -202,7 +202,7 @@ export function ChatSidebar({
         ) : null}
       </div>
 
-      <div className="border-t border-border px-2 py-3">
+      <div className="border-border border-t px-2 py-3">
         {viewer ? (
           <UserMenu viewer={viewer} />
         ) : isLoadingChats ? (
@@ -234,7 +234,7 @@ function SidebarSignInButton({
 }) {
   return (
     <button
-      className="flex h-8 w-full items-center justify-between rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-8 w-full items-center justify-between rounded-md px-2 text-muted-foreground text-sm transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
       onClick={() => {
         onSignIn?.();
         onNavigate?.();

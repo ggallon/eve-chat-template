@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import {
   parseSetCookieHeader,
   stripSecureCookiePrefix,
 } from "better-auth/cookies";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
   AUTH_HINT_COOKIE_MAX_AGE,
@@ -36,7 +36,7 @@ function redirectToAuthError(request: Request, error: string) {
 
 function withAuthHintCookie(response: Response) {
   const authState = getAuthStateFromSetCookie(
-    response.headers.get("set-cookie"),
+    response.headers.get("set-cookie")
   );
 
   if (!authState) {
@@ -76,9 +76,10 @@ function getAuthStateFromSetCookie(setCookie: string | null) {
     return null;
   }
 
-  const sessionCookie = [...parseSetCookieHeader(setCookie)].find(([name]) => {
-    return stripSecureCookiePrefix(name) === BETTER_AUTH_SESSION_COOKIE_NAME;
-  });
+  const sessionCookie = [...parseSetCookieHeader(setCookie)].find(
+    ([name]) =>
+      stripSecureCookiePrefix(name) === BETTER_AUTH_SESSION_COOKIE_NAME
+  );
 
   if (!sessionCookie) {
     return null;

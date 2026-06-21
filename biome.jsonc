@@ -5,11 +5,37 @@
     "ultracite/biome/react",
     "ultracite/biome/next"
   ],
+  "files": {
+    "includes": ["!**/*.svg", "!!components/ui", "!!lib/db/migrations"]
+  },
   "linter": {
     "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "info",
+        "noVoid": "off"
+      },
       "style": {
         "useConsistentTypeDefinitions": "off"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["agent/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": {
+              "level": "error",
+              "options": {
+                "strictCase": false,
+                "requireAscii": true,
+                "filenameCases": ["snake_case"]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

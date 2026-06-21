@@ -23,7 +23,7 @@ export function AgentChatBootstrapSync({
     window.dispatchEvent(
       new CustomEvent(CHAT_BOOTSTRAP_SYNC_EVENT, {
         detail,
-      }),
+      })
     );
   }, [chats, nextCursor, viewer]);
 

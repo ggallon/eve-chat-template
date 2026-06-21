@@ -34,7 +34,7 @@ export function writePendingChatMessage(chatId: string, message: string) {
         createdAt: Date.now(),
         pendingUserMessage,
         version: 1,
-      } satisfies StoredPendingChat),
+      } satisfies StoredPendingChat)
     );
     return true;
   } catch {
@@ -60,8 +60,7 @@ export function readPendingChatMessage(chatId: string) {
     const pendingUserMessage = parsed.pendingUserMessage?.trim();
 
     if (
-      !pendingUserMessage ||
-      !Number.isFinite(createdAt) ||
+      !(pendingUserMessage && Number.isFinite(createdAt)) ||
       Date.now() - createdAt > PENDING_CHAT_STORAGE_MAX_AGE_MS
     ) {
       window.sessionStorage.removeItem(key);

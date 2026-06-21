@@ -22,7 +22,7 @@ export function AgentChatSkeleton({ mode }: { readonly mode: "chat" | "new" }) {
       className="flex h-dvh overflow-hidden bg-background text-foreground"
       role="status"
     >
-      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-border bg-background md:flex">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-border border-r bg-background md:flex">
         <div className="flex flex-col gap-1 px-2 pt-2 pb-2">
           <div className="flex items-center justify-between">
             <div className="flex size-8 items-center justify-center rounded-md">
@@ -35,7 +35,7 @@ export function AgentChatSkeleton({ mode }: { readonly mode: "chat" | "new" }) {
           <div
             className={cn(
               "flex h-8 items-center gap-2 rounded-md px-2 text-sm",
-              isNew ? activeRowClass : inactiveRowClass,
+              isNew ? activeRowClass : inactiveRowClass
             )}
           >
             <PlusIcon className="size-4" />
@@ -53,7 +53,7 @@ export function AgentChatSkeleton({ mode }: { readonly mode: "chat" | "new" }) {
           )}
         </div>
 
-        <div className="border-t border-border px-2 py-3">
+        <div className="border-border border-t px-2 py-3">
           <div className="h-8 rounded-md bg-muted/25" />
         </div>
       </aside>
@@ -107,7 +107,7 @@ function EmptyChatSkeleton() {
 function ConversationSkeleton() {
   return (
     <>
-      <div className="shrink-0 border-b border-border/70 py-3 pr-16 pl-12 md:pr-28 md:pl-4">
+      <div className="shrink-0 border-border/70 border-b py-3 pr-16 pl-12 md:pr-28 md:pl-4">
         <div className="h-6 w-48 max-w-[50vw] rounded-md bg-muted/35" />
       </div>
       <div className="flex-1 px-4 py-10 sm:px-6">
@@ -137,7 +137,7 @@ function StaticComposerFallback() {
       className="min-w-0 rounded-[14px] border border-border/80 bg-card/95 shadow-sm dark:bg-muted/45"
       data-chat-composer
     >
-      <div className="min-h-12 px-3 pt-3 pb-1 text-[15px] leading-6 text-muted-foreground/45 sm:px-4 dark:text-muted-foreground/60">
+      <div className="min-h-12 px-3 pt-3 pb-1 text-[15px] text-muted-foreground/45 leading-6 sm:px-4 dark:text-muted-foreground/60">
         Ask anything...
       </div>
       <div className="flex min-h-9 items-center justify-between gap-2 px-3 pt-1 pb-2 sm:gap-3 sm:px-4">

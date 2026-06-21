@@ -27,13 +27,13 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace;
+  --font-mono:
+    "Geist Mono", "Geist Mono Fallback", ui-monospace, "SFMono-Regular",
+    "Menlo", "Monaco", "Consolas", monospace;
 }
 
 :root,
 .light {
-  color-scheme: light;
-  /* Soft neutral page with white elevated surfaces so cards/composer pop. */
   --background: oklch(0.971 0 0);
   --foreground: oklch(0.16 0 0);
   --card: oklch(1 0 0);
@@ -53,10 +53,10 @@
   --input: oklch(0.916 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+  color-scheme: light;
 }
 
 .dark {
-  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -75,6 +75,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  color-scheme: dark;
 }
 
 * {
@@ -88,9 +89,9 @@ html {
 body {
   min-height: 100%;
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-geist-sans), var(--font-sans);
+  color: var(--foreground);
+  background: var(--background);
 }
 
 code,
@@ -121,15 +122,15 @@ html[data-eve-chat-sidebar="closed"] [data-desktop-sidebar] {
 }
 
 .shimmer-text {
+  color: transparent;
   background: linear-gradient(
     90deg,
     var(--muted-foreground) 0%,
     var(--foreground) 45%,
     var(--muted-foreground) 90%
   );
-  background-size: 220% 100%;
   background-clip: text;
-  color: transparent;
+  background-size: 220% 100%;
   animation: shimmer-text 1.8s linear infinite;
   will-change: background-position;
 }

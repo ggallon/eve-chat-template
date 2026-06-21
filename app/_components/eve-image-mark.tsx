@@ -7,7 +7,10 @@ export function EveImageMark({ size }: { readonly size: number }) {
       width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path d="M49.2813 66.9377L75.0313 34.9622H68.1395L47.9098 60.1058L42.4238 66.9377H49.2813Z" fill="white" />
+      <path
+        d="M49.2813 66.9377L75.0313 34.9622H68.1395L47.9098 60.1058L42.4238 66.9377H49.2813Z"
+        fill="white"
+      />
       <path d="M0 34.9622H42.4048V40.0704H0V34.9622Z" fill="white" />
       <path d="M27.6587 48.2844H0V53.3926H27.6587V48.2844Z" fill="white" />
       <path d="M27.6588 61.816H0V66.9242H27.6588V61.816Z" fill="white" />

@@ -4,7 +4,7 @@ import { getServerViewer } from "@/lib/session";
 
 export async function GET(
   _request: Request,
-  { params }: { readonly params: Promise<{ readonly id: string }> },
+  { params }: { readonly params: Promise<{ readonly id: string }> }
 ) {
   const viewer = await getServerViewer();
   if (!viewer) {

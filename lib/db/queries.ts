@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, gte, lt, or, sql } from "drizzle-orm";
 import type { HandleMessageStreamEvent, SessionState } from "eve/client";
 import { isChatTurnSettledEvent } from "@/lib/chat/events";
-import type { ActiveChat, ChatListItem, ChatListPage } from "@/lib/chat/types";
 import { createFallbackTitle, DEFAULT_CHAT_TITLE } from "@/lib/chat/title";
-import { chat, chatEvent } from "@/lib/db/schema";
+import type { ActiveChat, ChatListItem, ChatListPage } from "@/lib/chat/types";
 import { db } from "@/lib/db/client";
+import { chat, chatEvent } from "@/lib/db/schema";
 
 const CHAT_HISTORY_PAGE_SIZE = 20;
 
@@ -16,7 +16,7 @@ function encodeChatCursor(updatedAt: Date, id: string) {
 function decodeChatCursor(cursor: string) {
   const [updatedAtRaw, id] = cursor.split("::");
 
-  if (!updatedAtRaw || !id) {
+  if (!(updatedAtRaw && id)) {
     return null;
   }
 
@@ -37,7 +37,7 @@ export async function listChatsByUser(userId: string): Promise<ChatListItem[]> {
 
 export async function listChatsPageByUser(
   userId: string,
-  cursor?: string | null,
+  cursor?: string | null
 ): Promise<ChatListPage> {
   const cursorValue = cursor?.trim();
   const parsedCursor = cursorValue ? decodeChatCursor(cursorValue) : null;
@@ -54,10 +54,13 @@ export async function listChatsPageByUser(
         parsedCursor
           ? or(
               lt(chat.updatedAt, parsedCursor.updatedAt),
-              and(eq(chat.updatedAt, parsedCursor.updatedAt), lt(chat.id, parsedCursor.id)),
+              and(
+                eq(chat.updatedAt, parsedCursor.updatedAt),
+                lt(chat.id, parsedCursor.id)
+              )
             )
-          : undefined,
-      ),
+          : undefined
+      )
     )
     .orderBy(desc(chat.updatedAt), desc(chat.id))
     .limit(CHAT_HISTORY_PAGE_SIZE + 1);
@@ -72,7 +75,8 @@ export async function listChatsPageByUser(
       title: row.title,
       updatedAt: row.updatedAt.toISOString(),
     })),
-    nextCursor: hasMore && last ? encodeChatCursor(last.updatedAt, last.id) : null,
+    nextCursor:
+      hasMore && last ? encodeChatCursor(last.updatedAt, last.id) : null,
   };
 }
 
@@ -82,7 +86,7 @@ export async function createChat(
     pendingUserMessage,
   }: {
     readonly pendingUserMessage?: string;
-  } = {},
+  } = {}
 ) {
   const pendingMessage = pendingUserMessage?.trim();
   const pendingMessageCreatedAt = pendingMessage ? new Date() : null;
@@ -92,7 +96,9 @@ export async function createChat(
       id: randomUUID(),
       pendingUserMessage: pendingMessage || null,
       pendingUserMessageCreatedAt: pendingMessageCreatedAt,
-      title: pendingMessage ? createFallbackTitle(pendingMessage) : DEFAULT_CHAT_TITLE,
+      title: pendingMessage
+        ? createFallbackTitle(pendingMessage)
+        : DEFAULT_CHAT_TITLE,
       userId,
     })
     .returning({
@@ -112,7 +118,10 @@ export async function createChat(
   };
 }
 
-export async function getChatForUser(chatId: string, userId: string): Promise<ActiveChat | null> {
+export async function getChatForUser(
+  chatId: string,
+  userId: string
+): Promise<ActiveChat | null> {
   const [row] = await db
     .select({
       id: chat.id,
@@ -142,11 +151,11 @@ export async function getChatForUser(chatId: string, userId: string): Promise<Ac
   const pendingMessageCreatedAt = row.pendingUserMessageCreatedAt;
   const hasCurrentTurnCompleted = Boolean(
     pendingMessageCreatedAt &&
-    events.some(
-      (eventRow) =>
-        eventRow.createdAt >= pendingMessageCreatedAt &&
-        isChatTurnSettledEvent(eventRow.event),
-    ),
+      events.some(
+        (eventRow) =>
+          eventRow.createdAt >= pendingMessageCreatedAt &&
+          isChatTurnSettledEvent(eventRow.event)
+      )
   );
 
   return {
@@ -262,7 +271,7 @@ export async function skipChatAuthorization({
         event,
         eventIndex: eventIndex + offset,
         id: randomUUID(),
-      })),
+      }))
     )
     .onConflictDoUpdate({
       set: { event: sql`excluded.event` },
@@ -381,7 +390,7 @@ export async function saveChatSnapshot({
           event,
           eventIndex,
           id: randomUUID(),
-        })),
+        }))
       )
       .onConflictDoUpdate({
         set: { event: sql`excluded.event` },
@@ -391,7 +400,12 @@ export async function saveChatSnapshot({
 
   await db
     .delete(chatEvent)
-    .where(and(eq(chatEvent.chatId, chatId), gte(chatEvent.eventIndex, events.length)));
+    .where(
+      and(
+        eq(chatEvent.chatId, chatId),
+        gte(chatEvent.eventIndex, events.length)
+      )
+    );
 
   await db
     .update(chat)
@@ -405,5 +419,7 @@ export async function saveChatSnapshot({
 }
 
 export async function deleteChatForUser(chatId: string, userId: string) {
-  await db.delete(chat).where(and(eq(chat.id, chatId), eq(chat.userId, userId)));
+  await db
+    .delete(chat)
+    .where(and(eq(chat.id, chatId), eq(chat.userId, userId)));
 }

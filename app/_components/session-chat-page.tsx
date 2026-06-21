@@ -2,25 +2,25 @@
 
 import { useRouter } from "next/navigation";
 import {
+  type ReactNode,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
-import { createChatAction } from "@/app/actions/chat";
 import {
+  type AgentChatController,
+  type AgentChatControllerStatus,
   AgentChatSession,
   ComposerFooterControls,
   ErrorToast,
-  type AgentChatController,
-  type AgentChatControllerStatus,
 } from "@/app/_components/agent-chat";
 import {
   CHAT_ROUTE_SYNC_EVENT,
   type ChatRouteSyncDetail,
 } from "@/app/_components/agent-chat-events";
 import { useChatShell } from "@/app/_components/chat-shell-context";
+import { createChatAction } from "@/app/actions/chat";
 import { ChatComposer } from "@/components/chat/composer";
 import {
   clearPendingChatMessage,
@@ -48,10 +48,10 @@ export function SessionChatPage({
   const [draft, setDraft] = useState("");
   const [controllerReady, setControllerReady] = useState(false);
   const [controllerStatus, setControllerStatus] = useState(
-    IDLE_CONTROLLER_STATUS,
+    IDLE_CONTROLLER_STATUS
   );
   const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(
-    null,
+    null
   );
   const [clientError, setClientError] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export function SessionChatPage({
   }, [chatId]);
 
   useEffect(() => {
-    if (!isProvisionalChat || !viewer) {
+    if (!(isProvisionalChat && viewer)) {
       return;
     }
 
@@ -139,7 +139,7 @@ export function SessionChatPage({
         } catch {}
 
         setClientError(
-          error instanceof Error ? error.message : "Failed to start chat.",
+          error instanceof Error ? error.message : "Failed to start chat."
         );
         router.replace("/", { scroll: false });
       }
@@ -170,7 +170,7 @@ export function SessionChatPage({
         if (detail.activeChat) {
           return getRestorablePendingUserMessage(
             detail.activeChat.pendingUserMessage,
-            settledPendingMessagesRef.current,
+            settledPendingMessagesRef.current
           );
         }
 
@@ -208,7 +208,7 @@ export function SessionChatPage({
           `/api/chats/${encodeURIComponent(chatId)}`,
           {
             signal: abortController.signal,
-          },
+          }
         );
 
         if (cancelled) {
@@ -219,7 +219,7 @@ export function SessionChatPage({
           setClientError(
             response.status === 404
               ? "Chat not found."
-              : "Failed to load chat history.",
+              : "Failed to load chat history."
           );
           return;
         }
@@ -235,7 +235,7 @@ export function SessionChatPage({
         setActiveChat(data.chat);
         const nextPendingUserMessage = getRestorablePendingUserMessage(
           data.chat?.pendingUserMessage ?? null,
-          settledPendingMessagesRef.current,
+          settledPendingMessagesRef.current
         );
 
         setPendingUserMessage(nextPendingUserMessage);
@@ -245,11 +245,11 @@ export function SessionChatPage({
         }
         setClientError(null);
       } catch (error) {
-        if (!cancelled && !abortController.signal.aborted) {
+        if (!(cancelled || abortController.signal.aborted)) {
           setClientError(
             error instanceof Error
               ? error.message
-              : "Failed to load chat history.",
+              : "Failed to load chat history."
           );
         }
       }
@@ -320,7 +320,7 @@ export function SessionChatPage({
   const handleControllerChange = useCallback(
     (
       controller: AgentChatController | null,
-      status: AgentChatControllerStatus,
+      status: AgentChatControllerStatus
     ) => {
       controllerRef.current = controller;
       setControllerReady(Boolean(controller));
@@ -329,10 +329,10 @@ export function SessionChatPage({
         current.isDisabled === status.isDisabled &&
         current.isEmpty === status.isEmpty
           ? current
-          : status,
+          : status
       );
     },
-    [],
+    []
   );
 
   const handleComposerSubmit = useCallback(
@@ -354,7 +354,7 @@ export function SessionChatPage({
         restoreDraft: setDraft,
       });
     },
-    [isLoadingChat],
+    [isLoadingChat]
   );
 
   const handleComposerStop = useCallback(() => {
@@ -370,10 +370,10 @@ export function SessionChatPage({
       }
 
       setPendingUserMessage((current) =>
-        !message || current === message ? null : current,
+        !message || current === message ? null : current
       );
     },
-    [chatId],
+    [chatId]
   );
 
   const handleActiveChatUpdated = useCallback((nextActiveChat: ActiveChat) => {
@@ -381,8 +381,8 @@ export function SessionChatPage({
     setPendingUserMessage(
       getRestorablePendingUserMessage(
         nextActiveChat.pendingUserMessage,
-        settledPendingMessagesRef.current,
-      ),
+        settledPendingMessagesRef.current
+      )
     );
   }, []);
 
@@ -411,8 +411,8 @@ export function SessionChatPage({
         chatId={chatId}
         key={sessionInstanceKey}
         onActiveChatUpdated={handleActiveChatUpdated}
-        onPendingUserMessageSettled={handlePendingUserMessageSettled}
         onControllerChange={handleControllerChange}
+        onPendingUserMessageSettled={handlePendingUserMessageSettled}
         pendingUserMessage={pendingUserMessage}
       />
 
@@ -432,7 +432,7 @@ export function SessionChatPage({
         </div>
       </div>
 
-      <div className="hidden" aria-hidden>
+      <div aria-hidden className="hidden">
         {children}
       </div>
     </div>
@@ -441,7 +441,7 @@ export function SessionChatPage({
 
 function getRestorablePendingUserMessage(
   pendingUserMessage: string | null | undefined,
-  settledMessages: ReadonlySet<string>,
+  settledMessages: ReadonlySet<string>
 ) {
   if (!pendingUserMessage || settledMessages.has(pendingUserMessage)) {
     return null;
@@ -472,12 +472,12 @@ function getSessionComposerDisabledReason({
   }
 
   if (!controllerStatus.isDisabled) {
-    return `Finish auth setup before chatting.`;
+    return "Finish auth setup before chatting.";
   }
 
   if (controllerStatus.isBusy) {
     return "eve is responding.";
   }
 
-  return undefined;
+  return;
 }

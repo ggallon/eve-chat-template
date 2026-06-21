@@ -13,7 +13,7 @@ export function getAppUrlHost(value: string | undefined) {
   const url = normalizeAppUrl(value);
 
   if (!url) {
-    return undefined;
+    return;
   }
 
   return new URL(url).host;
@@ -23,7 +23,7 @@ function normalizeAppUrl(value: string | undefined) {
   const trimmed = value?.trim();
 
   if (!trimmed) {
-    return undefined;
+    return;
   }
 
   const withProtocol = /^[a-z][a-z\d+.-]*:\/\//i.test(trimmed)
@@ -38,6 +38,6 @@ function normalizeAppUrl(value: string | undefined) {
 
     return url.toString().replace(/\/$/, "");
   } catch {
-    return undefined;
+    return;
   }
 }

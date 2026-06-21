@@ -78,7 +78,7 @@ export const chat = pgTable(
   (table) => [
     index("idx_chat_user_updated").on(table.userId, table.updatedAt),
     index("idx_chat_user_created").on(table.userId, table.createdAt),
-  ],
+  ]
 );
 
 export const chatEvent = pgTable(
@@ -89,13 +89,16 @@ export const chatEvent = pgTable(
       .notNull()
       .references(() => chat.id, { onDelete: "cascade" }),
     eventIndex: integer("event_index").notNull(),
-    event: jsonb("event").$type<HandleMessageStreamEvent>().notNull().default(sql`'{}'::jsonb`),
+    event: jsonb("event")
+      .$type<HandleMessageStreamEvent>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
     index("idx_chat_event_chat").on(table.chatId),
     uniqueIndex("idx_chat_event_chat_index").on(table.chatId, table.eventIndex),
-  ],
+  ]
 );
 
 export type Chat = typeof chat.$inferSelect;

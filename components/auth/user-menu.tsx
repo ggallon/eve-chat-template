@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { ChevronsUpDownIcon, Loader2Icon, LogOutIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { VercelIcon } from "@/components/icons";
 import {
   DropdownMenu,
@@ -23,12 +23,14 @@ export function UserMenu({ viewer }: { readonly viewer: Viewer }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/50 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           type="button"
         >
           <UserAvatar viewer={viewer} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-medium text-foreground">{viewer.name}</span>
+            <span className="block truncate font-medium text-foreground text-xs">
+              {viewer.name}
+            </span>
             <span className="block truncate text-[11px] text-muted-foreground">
               {viewer.email}
             </span>
@@ -36,10 +38,15 @@ export function UserMenu({ viewer }: { readonly viewer: Viewer }) {
           <ChevronsUpDownIcon className="size-3.5 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56" side="top" sideOffset={8}>
+      <DropdownMenuContent
+        align="start"
+        className="w-56"
+        side="top"
+        sideOffset={8}
+      >
         <DropdownMenuLabel className="min-w-0">
           <span className="block truncate text-sm">{viewer.name}</span>
-          <span className="block truncate text-xs font-normal text-muted-foreground">
+          <span className="block truncate font-normal text-muted-foreground text-xs">
             {viewer.email}
           </span>
         </DropdownMenuLabel>

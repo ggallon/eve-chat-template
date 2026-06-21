@@ -5,12 +5,16 @@ import { nextCookies } from "better-auth/next-js";
 import { getAppUrlHost, getEffectiveAppUrl } from "@/lib/auth-url";
 import { db } from "@/lib/db/client";
 
-const vercelClientId = process.env.NEXT_PUBLIC_VERCEL_APP_CLIENT_ID?.trim() ?? "";
+const vercelClientId =
+  process.env.NEXT_PUBLIC_VERCEL_APP_CLIENT_ID?.trim() ?? "";
 const vercelClientSecret = process.env.VERCEL_APP_CLIENT_SECRET?.trim() ?? "";
 const betterAuthSecret = process.env.BETTER_AUTH_SECRET?.trim();
-const vercelProviderConfigured = Boolean(betterAuthSecret && vercelClientId && vercelClientSecret);
+const vercelProviderConfigured = Boolean(
+  betterAuthSecret && vercelClientId && vercelClientSecret
+);
 const authBaseUrl = getEffectiveAppUrl();
-const authProtocol = new URL(authBaseUrl).protocol === "https:" ? "https" : "http";
+const authProtocol =
+  new URL(authBaseUrl).protocol === "https:" ? "https" : "http";
 const allowedHosts = [
   "localhost:3000",
   "localhost:3001",

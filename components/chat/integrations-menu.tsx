@@ -1,7 +1,8 @@
 "use client";
 
-import type { ComponentType } from "react";
 import { BugIcon, CircleDotIcon, HammerIcon } from "lucide-react";
+import type { ComponentType } from "react";
+import type { EnabledConnections } from "@/app/_components/chat-shell-context";
 import { NotionIcon } from "@/components/icons";
 import {
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { EnabledConnections } from "@/app/_components/chat-shell-context";
 import { cn } from "@/lib/utils";
 
 type ConnectionItem = {
@@ -31,7 +31,7 @@ export function IntegrationsMenu({
   readonly enabledConnections: EnabledConnections;
   readonly onConnectionEnabledChange: (
     connection: keyof EnabledConnections,
-    enabled: boolean,
+    enabled: boolean
   ) => void;
 }) {
   return (
@@ -68,7 +68,7 @@ export function IntegrationsMenu({
                 <Icon className="size-[18px]" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm text-foreground">
+                <span className="block truncate text-foreground text-sm">
                   {label}
                 </span>
               </span>
@@ -76,13 +76,13 @@ export function IntegrationsMenu({
                 aria-hidden="true"
                 className={cn(
                   "relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors",
-                  enabled ? "bg-emerald-500" : "bg-muted",
+                  enabled ? "bg-emerald-500" : "bg-muted"
                 )}
               >
                 <span
                   className={cn(
                     "size-3 rounded-full bg-white shadow-sm transition-transform",
-                    enabled ? "translate-x-[15px]" : "translate-x-0.5",
+                    enabled ? "translate-x-[15px]" : "translate-x-0.5"
                   )}
                 />
               </span>

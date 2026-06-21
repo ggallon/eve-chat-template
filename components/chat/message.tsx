@@ -2,16 +2,20 @@
 
 import type { EveDynamicToolPart, EveMessage, EveMessagePart } from "eve/react";
 import {
+  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  CheckIcon,
   Loader2Icon,
   XIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/chat/markdown";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -34,11 +38,13 @@ export function AgentMessage({
   readonly canRespond: boolean;
   readonly isStreaming: boolean;
   readonly message: EveMessage;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
 }) {
   const lastTextIndex = message.parts.reduce(
     (last, part, index) => (part.type === "text" ? index : last),
-    -1,
+    -1
   );
   const isUser = message.role === "user";
 
@@ -47,15 +53,15 @@ export function AgentMessage({
       className={cn(
         "group flex w-full min-w-0",
         isUser ? "justify-end" : "justify-start",
-        message.metadata?.optimistic ? "opacity-90" : undefined,
+        message.metadata?.optimistic ? "opacity-90" : undefined
       )}
     >
       <div
         className={cn(
           "min-w-0",
           isUser
-            ? "max-w-[85%] rounded-[18px] border border-border/40 bg-muted/70 px-3 py-1.5 text-[15px] leading-6 text-foreground shadow-sm"
-            : "w-full max-w-none text-sm leading-relaxed text-foreground",
+            ? "max-w-[85%] rounded-[18px] border border-border/40 bg-muted/70 px-3 py-1.5 text-[15px] text-foreground leading-6 shadow-sm"
+            : "w-full max-w-none text-foreground text-sm leading-relaxed"
         )}
       >
         <AgentMessageParts
@@ -85,7 +91,9 @@ function AgentMessageParts({
   readonly isUser: boolean;
   readonly lastTextIndex: number;
   readonly messageId: string;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
   readonly parts: readonly EveMessagePart[];
   readonly showCaret: boolean;
 }) {
@@ -106,7 +114,7 @@ function AgentMessageParts({
         key={`tools:${partsForGroup.map((part) => part.toolCallId).join(":")}`}
         onInputResponses={onInputResponses}
         parts={partsForGroup}
-      />,
+      />
     );
     pendingTools = [];
   };
@@ -129,7 +137,7 @@ function AgentMessageParts({
         part={part}
         showCaret={showCaret && index === lastTextIndex}
         streamKey={`${messageId}:${key}`}
-      />,
+      />
     );
   });
 
@@ -148,7 +156,9 @@ function AgentMessagePart({
 }: {
   readonly canRespond: boolean;
   readonly isUser: boolean;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
   readonly part: EveMessagePart;
   readonly showCaret: boolean;
   readonly streamKey: string;
@@ -160,10 +170,19 @@ function AgentMessagePart({
       return isUser ? (
         <UserTextPart text={part.text} />
       ) : (
-        <AssistantTextPart showCaret={showCaret} streamKey={streamKey} text={part.text} />
+        <AssistantTextPart
+          showCaret={showCaret}
+          streamKey={streamKey}
+          text={part.text}
+        />
       );
     case "reasoning":
-      return <ReasoningPart isStreaming={part.state === "streaming"} text={part.text} />;
+      return (
+        <ReasoningPart
+          isStreaming={part.state === "streaming"}
+          text={part.text}
+        />
+      );
     case "dynamic-tool":
       return null;
   }
@@ -183,7 +202,8 @@ function AssistantTextPart({
   readonly text: string;
 }) {
   const smoothedText = useStreamingText(text, showCaret, streamKey);
-  const isRevealActive = smoothedText.length > 0 && (showCaret || smoothedText !== text);
+  const isRevealActive =
+    smoothedText.length > 0 && (showCaret || smoothedText !== text);
   const showVisibleCaret = showCaret && smoothedText.length > 0;
 
   return (
@@ -197,9 +217,13 @@ function AssistantTextPart({
   );
 }
 
-function useStreamingText(text: string, isStreaming: boolean, streamKey: string) {
+function useStreamingText(
+  text: string,
+  isStreaming: boolean,
+  streamKey: string
+) {
   const [visibleText, setVisibleText] = useState(() =>
-    getInitialStreamingText(text, isStreaming, streamKey),
+    getInitialStreamingText(text, isStreaming, streamKey)
   );
   const visibleTextRef = useRef(visibleText);
 
@@ -262,7 +286,11 @@ function useStreamingText(text: string, isStreaming: boolean, streamKey: string)
   return visibleText;
 }
 
-function getInitialStreamingText(text: string, isStreaming: boolean, streamKey: string) {
+function getInitialStreamingText(
+  text: string,
+  isStreaming: boolean,
+  streamKey: string
+) {
   const cachedText = streamingTextCache.get(streamKey);
 
   if (cachedText && text.startsWith(cachedText)) {
@@ -341,13 +369,18 @@ function ReasoningPart({
 
   return (
     <Collapsible className="my-3 w-full" onOpenChange={setOpen} open={open}>
-      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+      <CollapsibleTrigger className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground">
         <span className={isStreaming ? "shimmer-text" : undefined}>
           {isStreaming ? "Thinking..." : "Reasoning"}
         </span>
-        <ChevronDownIcon className={cn("size-4 transition-transform", open ? "rotate-180" : "")} />
+        <ChevronDownIcon
+          className={cn(
+            "size-4 transition-transform",
+            open ? "rotate-180" : ""
+          )}
+        />
       </CollapsibleTrigger>
-      <CollapsibleContent className="mt-3 border-l border-border pl-4 text-muted-foreground">
+      <CollapsibleContent className="mt-3 border-border border-l pl-4 text-muted-foreground">
         <Markdown>{text}</Markdown>
       </CollapsibleContent>
     </Collapsible>
@@ -362,12 +395,17 @@ function ToolGroup({
 }: {
   readonly canRespond: boolean;
   readonly isSettled: boolean;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
   readonly parts: readonly EveDynamicToolPart[];
 }) {
   const shouldOpen = parts.some(needsInputResponse);
   const [open, setOpen] = useState(shouldOpen);
-  const status = getSettledToolStatus(getToolGroupStatus(parts), isSettled && !shouldOpen);
+  const status = getSettledToolStatus(
+    getToolGroupStatus(parts),
+    isSettled && !shouldOpen
+  );
   const label = summarizeToolGroup(parts, status);
   const canExpand =
     parts.length > 1 ? parts.some(hasToolDetails) : hasToolDetails(parts[0]!);
@@ -386,8 +424,8 @@ function ToolGroup({
     >
       <CollapsibleTrigger
         className={cn(
-          "group flex max-w-full items-center gap-2 py-0.5 text-left text-sm leading-6 text-muted-foreground transition-colors",
-          canExpand ? "cursor-pointer hover:text-foreground" : "cursor-default",
+          "group flex max-w-full items-center gap-2 py-0.5 text-left text-muted-foreground text-sm leading-6 transition-colors",
+          canExpand ? "cursor-pointer hover:text-foreground" : "cursor-default"
         )}
         disabled={!canExpand}
       >
@@ -398,13 +436,15 @@ function ToolGroup({
           <ChevronRightIcon
             className={cn(
               "size-3 shrink-0 self-center transition-all",
-              open ? "rotate-90 opacity-100" : "opacity-0 group-hover:opacity-100",
+              open
+                ? "rotate-90 opacity-100"
+                : "opacity-0 group-hover:opacity-100"
             )}
           />
         ) : null}
       </CollapsibleTrigger>
       {canExpand ? (
-        <CollapsibleContent className="ml-2 border-l border-border/40 pl-3 pt-0.5 pb-1">
+        <CollapsibleContent className="ml-2 border-border/40 border-l pt-0.5 pb-1 pl-3">
           {parts.length === 1 ? (
             <ToolDetails
               canRespond={canRespond}
@@ -436,12 +476,17 @@ function ToolCallItem({
 }: {
   readonly canRespond: boolean;
   readonly isSettled: boolean;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
   readonly part: EveDynamicToolPart;
 }) {
   const shouldOpen = needsInputResponse(part);
   const [open, setOpen] = useState(shouldOpen);
-  const status = getSettledToolStatus(getToolStatus(part), isSettled && !shouldOpen);
+  const status = getSettledToolStatus(
+    getToolStatus(part),
+    isSettled && !shouldOpen
+  );
   const canExpand = hasToolDetails(part);
 
   useEffect(() => {
@@ -453,17 +498,22 @@ function ToolCallItem({
   const button = (
     <button
       className={cn(
-        "flex w-full items-center gap-2 py-0.5 text-left text-sm leading-6 text-muted-foreground transition-colors",
-        canExpand ? "cursor-pointer hover:text-foreground" : "cursor-default",
+        "flex w-full items-center gap-2 py-0.5 text-left text-muted-foreground text-sm leading-6 transition-colors",
+        canExpand ? "cursor-pointer hover:text-foreground" : "cursor-default"
       )}
       type="button"
     >
       <ToolStatusIcon status={status} />
       <ToolNameLabel part={part} />
-      <span className="truncate text-foreground/80">{describeToolAction(part, status)}</span>
+      <span className="truncate text-foreground/80">
+        {describeToolAction(part, status)}
+      </span>
       {canExpand ? (
         <ChevronRightIcon
-          className={cn("ml-auto size-3 shrink-0 self-center transition-transform", open ? "rotate-90" : "")}
+          className={cn(
+            "ml-auto size-3 shrink-0 self-center transition-transform",
+            open ? "rotate-90" : ""
+          )}
         />
       ) : null}
     </button>
@@ -493,10 +543,13 @@ function ToolDetails({
   part,
 }: {
   readonly canRespond: boolean;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
   readonly part: EveDynamicToolPart;
 }) {
-  const hasOutput = part.state === "output-available" || part.state === "output-error";
+  const hasOutput =
+    part.state === "output-available" || part.state === "output-error";
 
   return (
     <div className="space-y-1.5">
@@ -569,8 +622,10 @@ function ToolPayload({
       <p className="text-[11px] text-muted-foreground">{label}</p>
       <pre
         className={cn(
-          "max-h-56 overflow-auto rounded bg-muted/30 p-2 font-mono text-[11px] leading-5 text-muted-foreground",
-          tone === "destructive" ? "bg-destructive/10 text-destructive" : undefined,
+          "max-h-56 overflow-auto rounded bg-muted/30 p-2 font-mono text-[11px] text-muted-foreground leading-5",
+          tone === "destructive"
+            ? "bg-destructive/10 text-destructive"
+            : undefined
         )}
       >
         {formatPayload(value)}
@@ -585,7 +640,9 @@ function InputRequestActions({
   part,
 }: {
   readonly canRespond: boolean;
-  readonly onInputResponses: (responses: readonly AgentInputResponse[]) => void | Promise<void>;
+  readonly onInputResponses: (
+    responses: readonly AgentInputResponse[]
+  ) => void | Promise<void>;
   readonly part: EveDynamicToolPart;
 }) {
   const [freeformText, setFreeformText] = useState("");
@@ -597,7 +654,7 @@ function InputRequestActions({
 
   const inputResponse = part.toolMetadata?.eve?.inputResponse;
   const selectedOption = inputRequest.options?.find(
-    (option) => option.id === inputResponse?.optionId,
+    (option) => option.id === inputResponse?.optionId
   );
 
   if (inputResponse) {
@@ -605,7 +662,9 @@ function InputRequestActions({
       <div className="rounded-md border border-border bg-background px-3 py-2 text-sm">
         <span className="text-muted-foreground">Responded: </span>
         <span className="font-medium">
-          {selectedOption?.label ?? inputResponse.text ?? inputResponse.optionId}
+          {selectedOption?.label ??
+            inputResponse.text ??
+            inputResponse.optionId}
         </span>
       </div>
     );
@@ -622,7 +681,7 @@ function InputRequestActions({
 
   return (
     <div className="space-y-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
-      <p className="text-sm text-muted-foreground">{inputRequest.prompt}</p>
+      <p className="text-muted-foreground text-sm">{inputRequest.prompt}</p>
       {inputRequest.options?.length ? (
         <div className="flex flex-wrap gap-2">
           {inputRequest.options.map((option) => (
@@ -676,7 +735,9 @@ function InputRequestActions({
 type ToolStatus = "completed" | "denied" | "error" | "running";
 
 function needsInputResponse(part: EveDynamicToolPart) {
-  return Boolean(part.toolMetadata?.eve?.inputRequest && !part.toolMetadata.eve.inputResponse);
+  return Boolean(
+    part.toolMetadata?.eve?.inputRequest && !part.toolMetadata.eve.inputResponse
+  );
 }
 
 function hasToolDetails(part: EveDynamicToolPart) {
@@ -684,12 +745,20 @@ function hasToolDetails(part: EveDynamicToolPart) {
     return false;
   }
 
-  const hasInput = part.input !== undefined && formatPayload(part.input).trim().length > 0;
+  const hasInput =
+    part.input !== undefined && formatPayload(part.input).trim().length > 0;
   const hasOutput =
-    part.state === "output-available" && formatPayload(part.output).trim().length > 0;
-  const hasError = part.state === "output-error" && part.errorText.trim().length > 0;
+    part.state === "output-available" &&
+    formatPayload(part.output).trim().length > 0;
+  const hasError =
+    part.state === "output-error" && part.errorText.trim().length > 0;
 
-  return hasInput || hasOutput || hasError || Boolean(part.toolMetadata?.eve?.inputRequest);
+  return (
+    hasInput ||
+    hasOutput ||
+    hasError ||
+    Boolean(part.toolMetadata?.eve?.inputRequest)
+  );
 }
 
 function isConnectionSearchTool(part: EveDynamicToolPart) {
@@ -714,7 +783,10 @@ function getToolStatus(part: EveDynamicToolPart): ToolStatus {
   }
 }
 
-function getSettledToolStatus(status: ToolStatus, isSettled: boolean): ToolStatus {
+function getSettledToolStatus(
+  status: ToolStatus,
+  isSettled: boolean
+): ToolStatus {
   return isSettled && status === "running" ? "completed" : status;
 }
 
@@ -749,7 +821,10 @@ function toolStatusLabel(status: ToolStatus) {
   }
 }
 
-function summarizeToolGroup(parts: readonly EveDynamicToolPart[], status: ToolStatus) {
+function summarizeToolGroup(
+  parts: readonly EveDynamicToolPart[],
+  status: ToolStatus
+) {
   if (parts.length === 1) {
     return describeToolAction(parts[0]!, status);
   }
@@ -798,15 +873,30 @@ function toolCategory(name: string) {
   return "ran";
 }
 
-function describeToolAction(part: EveDynamicToolPart, status = getToolStatus(part)) {
+function describeToolAction(
+  part: EveDynamicToolPart,
+  status = getToolStatus(part)
+) {
   const name = resolveToolName(part);
   const normalized = normalizeToolName(name);
   const input = asRecord(part.input);
-  const query = readString(input, ["query", "q", "search", "pattern", "prompt", "text"]);
+  const query = readString(input, [
+    "query",
+    "q",
+    "search",
+    "pattern",
+    "prompt",
+    "text",
+  ]);
   const path = readString(input, ["path", "filePath", "filename"]);
   const command = readString(input, ["command", "cmd"]);
   const url = readString(input, ["url", "href"]);
-  const connection = readString(input, ["connection", "connectionName", "connector", "source"]);
+  const connection = readString(input, [
+    "connection",
+    "connectionName",
+    "connector",
+    "source",
+  ]);
 
   if (normalized.includes("connection") && normalized.includes("search")) {
     const verb = status === "running" ? "Searching" : "Searched";
@@ -824,7 +914,9 @@ function describeToolAction(part: EveDynamicToolPart, status = getToolStatus(par
   }
 
   if (normalized.includes("search") || normalized.includes("grep")) {
-    return query ? `Searched ${truncateInline(query, 72)}` : `Searched ${formatToolName(name)}`;
+    return query
+      ? `Searched ${truncateInline(query, 72)}`
+      : `Searched ${formatToolName(name)}`;
   }
 
   if (normalized.includes("read")) {
@@ -832,11 +924,15 @@ function describeToolAction(part: EveDynamicToolPart, status = getToolStatus(par
   }
 
   if (normalized.includes("write") || normalized.includes("edit")) {
-    return path ? `Changed ${shortenPath(path)}` : `Changed ${formatToolName(name)}`;
+    return path
+      ? `Changed ${shortenPath(path)}`
+      : `Changed ${formatToolName(name)}`;
   }
 
   if (normalized.includes("fetch")) {
-    return url ? `Fetched ${truncateInline(url, 72)}` : `Fetched ${formatToolName(name)}`;
+    return url
+      ? `Fetched ${truncateInline(url, 72)}`
+      : `Fetched ${formatToolName(name)}`;
   }
 
   if (command) {
@@ -856,7 +952,9 @@ function describeToolAction(part: EveDynamicToolPart, status = getToolStatus(par
 
 function resolveToolName(part: EveDynamicToolPart) {
   const metadataName = part.toolMetadata?.eve?.name;
-  return metadataName && metadataName !== "unknown" ? metadataName : part.toolName;
+  return metadataName && metadataName !== "unknown"
+    ? metadataName
+    : part.toolName;
 }
 
 function formatToolName(name: string) {
@@ -867,11 +965,7 @@ function formatToolName(name: string) {
 }
 
 function normalizeToolName(name: string) {
-  return name
-    .replace(/__/g, " ")
-    .replace(/[_-]/g, " ")
-    .trim()
-    .toLowerCase();
+  return name.replace(/__/g, " ").replace(/[_-]/g, " ").trim().toLowerCase();
 }
 
 function formatDisplayName(value: string) {
@@ -887,7 +981,10 @@ function formatDisplayName(value: string) {
     .join(" ");
 }
 
-function resolveConnectionName(toolName: string, inputConnection?: string | null) {
+function resolveConnectionName(
+  toolName: string,
+  inputConnection?: string | null
+) {
   if (inputConnection && inputConnection !== "*") {
     return inputConnection;
   }
@@ -900,7 +997,9 @@ function resolveConnectionName(toolName: string, inputConnection?: string | null
 
   const connectionTokens = tokens
     .slice(1)
-    .filter((token) => token !== "search" && token !== "tool" && token !== "tools");
+    .filter(
+      (token) => token !== "search" && token !== "tool" && token !== "tools"
+    );
 
   if (connectionTokens.length === 0) {
     return null;
@@ -927,7 +1026,10 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
-function readString(source: Record<string, unknown> | null, keys: readonly string[]) {
+function readString(
+  source: Record<string, unknown> | null,
+  keys: readonly string[]
+) {
   if (!source) {
     return null;
   }
