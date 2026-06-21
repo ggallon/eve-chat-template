@@ -1,4 +1,4 @@
-import { Suspense, type ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import { AgentChatBootstrapSync } from "@/app/_components/agent-chat-bootstrap-sync";
 import { AgentChatShell } from "@/app/_components/agent-chat-shell";
 import { listChatsPageByUser } from "@/lib/db/queries";
@@ -12,7 +12,7 @@ export default function ChatLayout({
   return (
     <AgentChatShell initialChats={[]} initialNextCursor={null} viewer={null}>
       {children}
-      <div className="hidden" aria-hidden>
+      <div aria-hidden className="hidden">
         <Suspense fallback={null}>
           <ResolvedChatBootstrap />
         </Suspense>

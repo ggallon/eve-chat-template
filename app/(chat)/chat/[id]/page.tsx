@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AgentChatRouteSync } from "@/app/_components/agent-chat-route-sync";
 import { SessionChatPage } from "@/app/_components/session-chat-page";
 import { isProvisionalChatId } from "@/lib/chat/provisional-chat";

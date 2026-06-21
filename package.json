@@ -18,7 +18,9 @@
     "start": "next start",
     "typecheck": "next typegen && tsgo --noEmit -p tsconfig.json",
     "eve:build": "eve build",
-    "eve:dev": "eve dev"
+    "eve:dev": "eve dev",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.1.0",
@@ -52,12 +54,14 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.16",
     "@types/node": "^25.9.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20260620.1",
     "drizzle-kit": "0.31.10",
     "microsandbox": "^0.5.7",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "ultracite": "7.8.3"
   }
 }

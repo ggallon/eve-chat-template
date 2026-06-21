@@ -21,7 +21,7 @@ export function AgentChatRouteSync({
     window.dispatchEvent(
       new CustomEvent(CHAT_ROUTE_SYNC_EVENT, {
         detail,
-      }),
+      })
     );
   }, [activeChat, chatId]);
 

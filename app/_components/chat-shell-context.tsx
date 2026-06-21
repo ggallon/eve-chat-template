@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { ChatListItem, Viewer } from "@/lib/chat/types";
 
 export type EnabledConnections = {
@@ -18,7 +18,7 @@ type ChatShellContextValue = {
   readonly setActiveChatId: (chatId: string | null) => void;
   readonly setConnectionEnabled: (
     connection: keyof EnabledConnections,
-    enabled: boolean,
+    enabled: boolean
   ) => void;
   readonly touchChat: (chat: ChatListItem) => void;
   readonly updateChatTitle: (chatId: string, title: string) => void;
