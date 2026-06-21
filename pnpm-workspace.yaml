@@ -1,0 +1,11 @@
+minimumReleaseAge: 2880 # 48 hrs
+
+minimumReleaseAgeExclude:
+  - "@next/*"
+  - "@vercel/*"
+  - ai
+  - next
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
