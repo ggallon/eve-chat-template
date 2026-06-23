@@ -34,7 +34,7 @@
     "@tailwindcss/postcss": "4.3.1",
     "@upstash/redis": "1.38.0",
     "@vercel/analytics": "2.0.1",
-    "@vercel/connect": "0.2.6",
+    "@vercel/connect": "0.2.7",
     "@vercel/speed-insights": "2.0.0",
     "ai": "7.0.0-beta.180",
     "better-auth": "1.6.20",
@@ -56,11 +56,11 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.0",
+    "@biomejs/biome": "2.5.1",
     "@types/node": "^25.9.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260621.1",
+    "@typescript/native-preview": "7.0.0-dev.20260623.1",
     "drizzle-kit": "0.31.10",
     "microsandbox": "^0.5.7",
     "typescript": "6.0.3",
