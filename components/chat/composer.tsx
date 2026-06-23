@@ -32,7 +32,6 @@ export function ChatComposer({
   isPreparing = false,
   maxLength = MAX_CHAT_MESSAGE_CHARS,
   onChange,
-  onStop,
   onSubmit,
   placeholder = "Ask eve anything...",
   value,
@@ -116,7 +115,7 @@ export function ChatComposer({
       </label>
       <textarea
         autoFocus={autoFocus}
-        className="max-h-32 min-h-12 w-full resize-none bg-transparent px-3 pt-3 pb-1 text-[15px] leading-6 outline-none placeholder:text-muted-foreground/45 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 dark:placeholder:text-muted-foreground/60"
+        className="max-h-32 min-h-12 w-full resize-none bg-transparent px-3 pt-3 pb-1 text-base leading-6 outline-none placeholder:text-muted-foreground/45 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 md:text-[15px] dark:placeholder:text-muted-foreground/60"
         data-chat-composer-input
         disabled={textareaDisabled}
         id={composerId}
@@ -135,9 +134,9 @@ export function ChatComposer({
         <div className="flex shrink-0 items-center">
           {isBusy ? (
             <Button
-              aria-label="Stop response"
-              className="size-6 cursor-pointer rounded-md bg-foreground text-background hover:bg-foreground/90"
-              onClick={onStop}
+              aria-label="Response in progress"
+              className="size-6 cursor-default rounded-md bg-foreground/15 text-foreground/55 shadow-none hover:bg-foreground/15 disabled:pointer-events-auto disabled:cursor-default disabled:opacity-100"
+              disabled
               size="icon-xs"
               type="button"
             >

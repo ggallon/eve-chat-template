@@ -573,19 +573,10 @@ function hasOpenChatTurn(events: readonly HandleMessageStreamEvent[]) {
   let open = false;
 
   for (const event of events) {
-    switch (event.type) {
-      case "turn.started":
-        open = true;
-        break;
-      case "authorization.required":
-      case "session.completed":
-      case "session.failed":
-      case "session.waiting":
-      case "turn.completed":
-        open = false;
-        break;
-      default:
-        break;
+    if (event.type === "turn.started") {
+      open = true;
+    } else if (isChatTurnSettledEvent(event)) {
+      open = false;
     }
   }
 
@@ -1394,7 +1385,7 @@ export function AgentChatSession({
 
   useEffect(() => {
     if (
-      !(viewer && pendingUserMessage && activeChat?.session?.sessionId) ||
+      !(viewer && activeChat?.session?.sessionId) ||
       resumeStartedRef.current ||
       agent.status !== "ready"
     ) {
@@ -1403,16 +1394,26 @@ export function AgentChatSession({
 
     const abortController = new AbortController();
     const existingEvents = activeChat.events;
+    const pendingMessageText = pendingUserMessage ?? null;
+    const shouldResumeOpenTurn = hasOpenChatTurn(existingEvents);
+
+    if (!(pendingMessageText || shouldResumeOpenTurn)) {
+      return;
+    }
+
     const startIndex = existingEvents.length;
-    const shouldIgnoreLeadingWaiting = !hasLatestUserMessage(
-      reduceEventsToMessageData(existingEvents).messages,
-      pendingUserMessage
-    );
+    const shouldIgnoreLeadingWaiting =
+      pendingMessageText !== null &&
+      !hasLatestUserMessage(
+        reduceEventsToMessageData(existingEvents).messages,
+        pendingMessageText
+      );
     const session = createPersistedClientSession({
       initialSession: activeChat.session,
       onSessionStarted: persistSessionState,
     });
     let cancelled = false;
+    let completed = false;
 
     resumeStartedRef.current = true;
     resumedEventsRef.current = [];
@@ -1487,6 +1488,7 @@ export function AgentChatSession({
         });
 
         onPendingUserMessageSettled?.();
+        completed = true;
       } catch (error) {
         if (!(cancelled || isAbortError(error))) {
           setClientError(
@@ -1502,6 +1504,9 @@ export function AgentChatSession({
 
     return () => {
       cancelled = true;
+      if (!completed) {
+        resumeStartedRef.current = false;
+      }
       abortController.abort();
     };
   }, [
@@ -1533,15 +1538,6 @@ export function AgentChatSession({
       clearLocalPendingUserMessage();
     }
   }, [clearLocalPendingUserMessage, displayMessages, localPendingUserMessage]);
-
-  useEffect(() => {
-    if (
-      pendingUserMessage &&
-      hasLatestUserMessage(displayMessages, pendingUserMessage)
-    ) {
-      onPendingUserMessageSettled?.(pendingUserMessage);
-    }
-  }, [displayMessages, onPendingUserMessageSettled, pendingUserMessage]);
 
   useEffect(() => {
     onControllerChange(
