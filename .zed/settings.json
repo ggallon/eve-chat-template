@@ -2,6 +2,11 @@
   "format_on_save": "on",
   "formatter": "language_server",
   "lsp": {
+    "biome": {
+      "settings": {
+        "config_path": "./biome.jsonc"
+      }
+    },
     "typescript-language-server": {
       "settings": {
         "typescript": {
@@ -13,6 +18,32 @@
     }
   },
   "languages": {
+    "CSS": {
+      "language_servers": [
+        "tailwindcss-intellisense-css",
+        "!vscode-css-language-server"
+      ]
+    },
+    "JSON": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "biome"
+        }
+      }
+    },
+    "JSONC": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "biome"
+        }
+      }
+    },
     "JavaScript": {
       "code_actions_on_format": {
         "source.fixAll.biome": true,

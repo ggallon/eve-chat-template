@@ -6,7 +6,12 @@
     "ultracite/biome/next"
   ],
   "files": {
-    "includes": ["!**/*.svg", "!!components/ui", "!!lib/db/migrations"]
+    "includes": [
+      "!!**/.eve",
+      "!!lib/db/migrations",
+      "!**/*.svg",
+      "!components/ui"
+    ]
   },
   "linter": {
     "rules": {
