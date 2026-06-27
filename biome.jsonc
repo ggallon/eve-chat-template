@@ -10,9 +10,17 @@
   },
   "linter": {
     "rules": {
+      "a11y": {
+        "noNoninteractiveElementInteractions": "warn",
+        "noSvgWithoutTitle": "off",
+        "useKeyWithClickEvents": "warn"
+      },
       "complexity": {
         "noExcessiveCognitiveComplexity": "info",
         "noVoid": "off"
+      },
+      "performance": {
+        "noImgElement": "warn"
       },
       "style": {
         "useConsistentTypeDefinitions": "off"
