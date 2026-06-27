@@ -16,15 +16,83 @@
 ## Status
 
 - **Priority**: P2
-- **Effort**: M
-- **Risk**: MED
-- **Depends on**: `plans/005-add-test-runner.md` — the resume-effect lint
-  fixes (the highest-risk subset) must not be auto-applied before the resume
-  behavior is pinned by tests. Do NOT start this plan until 005 is DONE.
+- **Effort**: M (was M; Bucket C removal ~unchanged since 4 new errors offset it)
+- **Risk**: MED → **LOW-MED** (Bucket C, the highest-risk subset, no longer fires
+  — see drift note below; remaining buckets are mechanical)
+- **Depends on**: ~~`plans/005-add-test-runner.md`~~ **REMOVED 2026-06-28** —
+  the 005 dependency existed solely to guard Bucket C's resume-effect hook-dep
+  rewrites; Bucket C's violations no longer fire (file unchanged, rules
+  silently relaxed — cause unknown, watched in `plans/README.md`). With
+  Bucket C empty there is no auto-fix-the-resume-effect step, so 005's test
+  net is no longer a prerequisite. 005 remains independently valuable.
 - **Category**: dx
-- **Planned at**: commit `d1daea6`, 2026-06-27
+- **Planned at**: commit `d1daea6`, 2026-06-27; **drifted at reconciliation
+  against `1b9c9ac` on 2026-06-28** — see "Drift note (2026-06-28)" below
+  before executing.
 
-## Why this matters
+## Drift note (2026-06-28 reconciliation against `1b9c9ac`)
+
+Re-ran `pnpm check` against current HEAD: **18 errors** (down from ~21 at
+`d1daea6`). The bucket map in "Current state" below is the planning-time
+picture; **Step 1's "trust Step 1 over the numbers" instruction is correct
+and you must follow it**, but the deltas are significant enough to enumerate
+up front so you can adapt the buckets:
+
+- **Bucket C (Step 5) is EMPTY — skip it.** All 5×
+  `useExhaustiveDependencies` (`session-chat-page.tsx:73,277,308`) and the 1×
+  `noExcessiveCognitiveComplexity` (`session-chat-page.tsx:205`) **no longer
+  fire**. `session-chat-page.tsx` is byte-identical to `d1daea6`
+  (`git diff --stat d1daea6..HEAD -- app/_components/session-chat-page.tsx` →
+  empty); `biome.jsonc`, `@biomejs/biome@2.5.1`, `ultracite@7.8.3` all
+  unchanged — the rules relaxed without any tracked change (cause unknown;
+  `plans/README.md` flags it as a watch item). With Bucket C gone, the plan's
+  005 dependency is dropped (see Status). Do NOT try to "restore" the
+  violations; just skip Step 5 entirely.
+- **Errors 006 cited that STILL match** — these buckets proceed as written:
+  - Bucket D: `app/layout.tsx:103` + `components/auth/auth-display.tsx:36`
+    (`noDangerouslySetInnerHtml`) — unchanged.
+  - Bucket B: `components/auth/user-menu.tsx:92` (`noImgElement` +
+    `useImageSize`) — unchanged.
+  - Bucket A: `app/api/auth/[...all]/route.ts:16,20` (`useAwait`×2),
+    `:30` (`noUnusedVariables`), `agent/tools/get_weather.ts:9` (`useAwait`),
+    `home-chat-page.tsx:138` (`noEmptyBlockStatements`) — unchanged.
+  - `home-chat-page.tsx:61,65` (`useExhaustiveDependencies`) — STILL fire
+    (these are on `home-chat-page.tsx`, the home submit, NOT the resume
+    effect; 006 originally grouped them with Bucket C — they were always
+    lower-risk than `session-chat-page.tsx`'s. Reclassify as Bucket A-adjacent:
+    they're FIXABLE and on a submit hook, not a resume effect; read each to
+    decide bug-vs-intentional, but the resume-effect caution does not apply).
+  - `agent-chat-shell.tsx:355` (3 a11y: `useKeyWithClickEvents`,
+    `noStaticElementInteractions`, `noNoninteractiveElementInteractions`) —
+    006 listed these but had no bucket; treat as a new Bucket E (a11y, low-risk,
+    see below).
+- **NEW errors 006 did NOT cite** — add to scope at Step 1:
+  - `components/chat/composer.tsx:145` (`noNestedTernary`),
+    `:180` (`useAriaPropsSupportedByRole`, `noNoninteractiveTabindex`) —
+    3 a11y/style errors in a file 006 never listed. New Bucket E.
+  - `app/_components/agent-chat-shell.tsx:100` (`noDocumentCookie`) — new.
+  - `app/_components/agent-chat-shell.tsx:404` (`noDangerouslySetInnerHtml`)
+    — **fold into Bucket D** (same rule, same static-vs-runtime review). 006
+    had agent-chat-shell.tsx in-scope for a11y at line 355 only; this is a
+    second, uncited site.
+  - `components/auth/sign-in-button.tsx:65` (`useOptionalChain`) — 006 listed
+    sign-in-button.tsx in the in-scope file set but its cited
+    `useOptionalChain` was on the auth route; Step 1 shows it here instead.
+    Bucket A.
+- **Revised bucket summary for execution**: A (mechanical: auth route
+  `useAwait`/`noUnusedVariables`/`useOptionalChain` + `get_weather.ts`
+  `useAwait` + `home-chat-page.tsx` empty block + `home-chat-page.tsx`
+  hook-deps + `sign-in-button.tsx:65` optional chain) → B (`user-menu.tsx`
+  `<img>`) → D (`layout.tsx` + `auth-display.tsx` + `agent-chat-shell.tsx:404`
+  `dangerouslySetInnerHtml` — all need static-vs-runtime review) → E
+  (a11y/style: `agent-chat-shell.tsx:355`×3 + `composer.tsx`×3 +
+  `agent-chat-shell.tsx:100` `noDocumentCookie`). **Bucket C is deleted.**
+
+The plan body below is left UNEDITED (it records the planning-time state and
+the Step 1 re-audit instruction reads it correctly). Override per the deltas
+above; trust Step 1's `pnpm check` output as the source of truth.
+
+
 
 `pnpm check` (the repo's only lint command, `package.json:22` `ultracite
 check`) exits 1 with ~21 errors, so it cannot be put in CI or a pre-commit
