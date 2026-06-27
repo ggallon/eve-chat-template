@@ -3,8 +3,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 
-const SETUP_DOCS_URL =
-  "https://github.com/vercel-labs/eve-chat-template/blob/main/docs/setup-and-deploy.md";
 const SIGN_IN_WITH_VERCEL_URL =
   "https://vercel.com/docs/sign-in-with-vercel/getting-started#prerequisites";
 const SIGN_IN_WITH_VERCEL_SCOPES_URL =
@@ -74,16 +72,6 @@ function AuthErrorCard({
             <ArrowLeftIcon className="size-4" />
             Back to chat
           </Link>
-        </Button>
-        <Button
-          asChild
-          className="h-8 rounded-md px-3 text-sm"
-          variant="outline"
-        >
-          <a href={SETUP_DOCS_URL} rel="noreferrer" target="_blank">
-            Setup guide
-            <ExternalLinkIcon className="size-3.5" />
-          </a>
         </Button>
         <Button
           asChild
