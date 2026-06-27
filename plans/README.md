@@ -11,7 +11,7 @@ update your row when done.
 |------|-------|----------|--------|------------|--------|
 | 001  | Split `components/chat/message.tsx` into a `message/` sub-component module | P2 | M | — | DONE (PR #1, verified 2026-06-28: 9 files present, old file gone) |
 | 002  | Fail fast when `BETTER_AUTH_SECRET` is unset | P1 | S | — | DONE (merged via PR #3 / `1b9c9ac`; verified 2026-06-28: fallback string gone, `throw` at `lib/auth.ts:14`) |
-| 003  | Fail loud when rate-limit Redis is unconfigured | P1 | S | — | TODO (no drift since `d1daea6`; finding live at `lib/rate-limit.ts:51-53`) |
+| 003  | Fail loud when rate-limit Redis is unconfigured | P1 | S | — | DONE (executed 2026-06-28 against `a8dc2b7`: silent `return` → `throw new Error(...)` at `lib/rate-limit.ts:51-55`; `pnpm typecheck` exit 0, no new lint errors in file; change staged on `advisor/003-fail-loud-rate-limit` — commit pending SSH signing-key passphrase) |
 | 004  | Re-point stale `components/chat/message.tsx` references in the docs | P2 | S | — | TODO (no drift since `d1daea6`; all 3 stale refs still present at lines 41/714/831) |
 | 005  | Add a test runner and the first batch of characterization tests | P1 | L | — | TODO (no drift since `d1daea6`; runner absent, all 4 target modules present & pure) |
 | 006  | Repair the broken `pnpm check` lint gate | P2 | M | ~~005~~ | **DRIFTED — see 006 note below; bucket C removed, 005 dep drops** |

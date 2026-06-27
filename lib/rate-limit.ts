@@ -49,7 +49,9 @@ export async function enforceRateLimit(options: LimitOptions) {
   const client = getRedis();
 
   if (!client) {
-    return;
+    throw new Error(
+      "Rate limiting is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL / KV_REST_API_TOKEN) and restart."
+    );
   }
 
   const now = Math.floor(Date.now() / 1000);
