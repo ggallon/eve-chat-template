@@ -9,6 +9,13 @@ const vercelClientId =
   process.env.NEXT_PUBLIC_VERCEL_APP_CLIENT_ID?.trim() ?? "";
 const vercelClientSecret = process.env.VERCEL_APP_CLIENT_SECRET?.trim() ?? "";
 const betterAuthSecret = process.env.BETTER_AUTH_SECRET?.trim();
+
+if (!betterAuthSecret) {
+  throw new Error(
+    "BETTER_AUTH_SECRET is required. Set it to a random value (e.g. `openssl rand -base64 32`) and restart."
+  );
+}
+
 const vercelProviderConfigured = Boolean(
   betterAuthSecret && vercelClientId && vercelClientSecret
 );
@@ -43,7 +50,7 @@ export const auth = betterAuth({
       allowDifferentEmails: true,
     },
   },
-  secret: betterAuthSecret ?? "eve-chat-template-unconfigured-secret",
+  secret: betterAuthSecret,
   advanced: {
     database: {
       generateId: () => randomUUID(),
