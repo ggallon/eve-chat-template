@@ -1,6 +1,5 @@
 "use client";
 
-import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
@@ -8,7 +7,7 @@ import { type ComponentProps, memo } from "react";
 import { Streamdown } from "streamdown";
 import { cn } from "@/lib/utils";
 
-const streamdownPlugins = { cjk, code, math, mermaid };
+const streamdownPlugins = { code, math, mermaid };
 
 export type MarkdownProps = ComponentProps<typeof Streamdown>;
 
