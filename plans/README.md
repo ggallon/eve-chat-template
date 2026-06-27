@@ -10,7 +10,7 @@ done.
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 001  | Split `components/chat/message.tsx` into a `message/` sub-component module | P2 | M | — | DONE (PR #1) |
-| 002  | Fail fast when `BETTER_AUTH_SECRET` is unset | P1 | S | — | TODO |
+| 002  | Fail fast when `BETTER_AUTH_SECRET` is unset | P1 | S | — | DONE (commit `0f8f09e`, branch `advisor/002-fail-fast-auth-secret`) |
 | 003  | Fail loud when rate-limit Redis is unconfigured | P1 | S | — | TODO |
 | 004  | Re-point stale `components/chat/message.tsx` references in the docs | P2 | S | — | TODO |
 | 005  | Add a test runner and the first batch of characterization tests | P1 | L | — | TODO |
