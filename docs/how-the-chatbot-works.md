@@ -38,7 +38,7 @@ Important files:
 | `app/_components/session-chat-page.tsx` | Session-page composer, active chat sync, and controller wiring. |
 | `app/_components/agent-chat.tsx` | The eve client bridge: sending, streaming, persistence, resume, pending auth, and display state. |
 | `components/chat/composer.tsx` | The controlled chat input. |
-| `components/chat/message.tsx` | Renders eve messages, markdown, reasoning, tools, and input requests. |
+| `components/chat/message/index.tsx` | Renders eve messages, markdown, reasoning, tools, and input requests (split across `components/chat/message/`). |
 | `components/chat/sidebar.tsx` | Paginated chat history sidebar. |
 | `components/chat/integrations-menu.tsx` | Per-turn connection toggle UI. |
 | `app/actions/chat.ts` | Server actions for chat creation, persistence, pending state, skip auth, and rate checks. |
@@ -711,7 +711,7 @@ messages.
 ## Message Rendering
 
 `useEveAgent` reduces stream events into message data. The template renders that
-data through `components/chat/message.tsx`.
+data through `components/chat/message/index.tsx`.
 
 Message rendering supports:
 
@@ -827,8 +827,10 @@ To add a local eve tool:
 2. Export a `defineTool(...)`.
 3. Import/register it according to eve's agent conventions.
 4. Update `agent/instructions.md` so the agent knows when to use it.
-5. If the UI should render a special tool state, update
-   `components/chat/message.tsx`.
+5. If the UI should render a special tool state, update the relevant file in
+   `components/chat/message/`: `tool-parts.tsx` for tool status icon, name
+   label, payload, and input-request actions; `tool-group.tsx` for how tool
+   calls are grouped into rows.
 
 Keep tool output structured. The message renderer can make much better UI
 decisions when tool parts contain predictable JSON instead of prose-only output.
