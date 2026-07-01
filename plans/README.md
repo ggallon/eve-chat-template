@@ -13,13 +13,27 @@ update your row when done.
 | 002  | Fail fast when `BETTER_AUTH_SECRET` is unset | P1 | S | — | DONE (merged via PR #3 / `1b9c9ac`; verified 2026-06-28: fallback string gone, `throw` at `lib/auth.ts:14`) |
 | 003  | Fail loud when rate-limit Redis is unconfigured | P1 | S | — | DONE (executed 2026-06-28 against `a8dc2b7`: silent `return` → `throw new Error(...)` at `lib/rate-limit.ts:51-55`; `pnpm typecheck` exit 0, no new lint errors in file; change staged on `advisor/003-fail-loud-rate-limit` — commit pending SSH signing-key passphrase) |
 | 004  | Re-point stale `components/chat/message.tsx` references in the docs | P2 | S | — | DONE (executed 2026-07-01; stale refs re-pointed to `components/chat/message/index.tsx`, `tool-parts.tsx`, and `tool-group.tsx`) |
-| 005  | Add a test runner and the first batch of characterization tests | P1 | L | — | TODO (no drift since `d1daea6`; runner absent, all 4 target modules present & pure) |
+| 005  | Add a test runner (vitest) | P1 | S | — | DONE (executed 2026-07-01 on `advisor/005-add-test-runner`: `vitest@3.2.6` + `vite-tsconfig-paths@6.1.1` added to devDeps; `test`/`test:run` scripts added; `vitest.config.ts` created with `@/*` alias via tsconfig-paths, node env, `passWithNoTests: true`; `pnpm test:run` exit 0 "No test files found", `pnpm typecheck` exit 0, no new lint errors in touched files; `passWithNoTests` added because vitest exits 1 on empty test set by default — needed so the gate passes before 007/008 land) |
 | 006  | Repair the broken `pnpm check` lint gate | P2 | M | ~~005~~ | **DRIFTED — see 006 note below; bucket C removed, 005 dep drops** |
+| 007  | Characterization tests for `lib/chat/*` pure helpers (events, title, limits) | P1 | M | 005 | TODO (split from the original 005 on 2026-07-01; all 3 target modules present & pure) |
+| 008  | Characterization tests for `components/chat/message/tool-status.ts` | P1 | M | 005 | TODO (split from the original 005 on 2026-07-01; target module present & pure) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
 
 ## Dependency notes
 
+- **005 split into 005/007/008 (2026-07-01)**: the original plan 005 ("Add a
+  test runner and the first batch of characterization tests") bundled runner
+  setup with all four characterization test files, including the large
+  `tool-status.ts` file. It is now three plans: **005** (runner setup only —
+  `vitest`, `vitest.config.ts`, scripts), **007** (`lib/chat/events.test.ts`,
+  `lib/chat/title.test.ts`, `lib/chat/limits.test.ts`), and **008**
+  (`components/chat/message/tool-status.test.ts`). 007 and 008 both depend on
+  005 and are independent of each other — they can run in parallel once 005
+  lands. Every other reference to "plan 005" elsewhere in this file that
+  predates the split (e.g. in the reconciliation log) refers to the
+  pre-split, combined scope; treat it as historical context, not a live
+  dependency target.
 - **001 → DONE**: executed by PR #1 (`Split chat message into sub-components`).
   The split is in the tree (`components/chat/message/` is a 9-file module);
   plan 004 fixes the stale docs that the split left behind.
@@ -46,8 +60,8 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
   the remaining top-priority item.
 - **Perf findings (F10/F11/F12: `AgentMessage` memoization, per-event
   ownership-SELECT redundancy, O(n²) event-log dedup)** touch the streaming
-  hot path in `agent-chat.tsx` and benefit from 005's tests existing first —
-  not planned in this batch.
+  hot path in `agent-chat.tsx` and benefit from 007/008's tests existing
+  first — not planned in this batch.
 
 ## Reconciliation log (2026-06-28, against `1b9c9ac`)
 

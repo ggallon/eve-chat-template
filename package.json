@@ -20,7 +20,9 @@
     "eve:build": "eve build",
     "eve:dev": "eve dev",
     "check": "ultracite check",
-    "fix": "ultracite fix"
+    "fix": "ultracite fix",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.1.0",
@@ -57,13 +59,19 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.1",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.2",
     "@types/node": "^25.9.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20260624.1",
+    "@vitejs/plugin-react": "6.0.3",
     "drizzle-kit": "0.31.10",
-    "microsandbox": "^0.5.10",
+    "jsdom": "29.1.1",
+    "microsandbox": "0.5.10",
     "typescript": "6.0.3",
-    "ultracite": "7.8.3"
+    "ultracite": "7.8.3",
+    "vite-tsconfig-paths": "6.1.1",
+    "vitest": "4.1.9"
   }
 }
