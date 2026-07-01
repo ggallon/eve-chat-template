@@ -16,81 +16,212 @@
 ## Status
 
 - **Priority**: P2
-- **Effort**: M (was M; Bucket C removal ~unchanged since 4 new errors offset it)
-- **Risk**: MED → **LOW-MED** (Bucket C, the highest-risk subset, no longer fires
-  — see drift note below; remaining buckets are mechanical)
-- **Depends on**: ~~`plans/005-add-test-runner.md`~~ **REMOVED 2026-06-28** —
-  the 005 dependency existed solely to guard Bucket C's resume-effect hook-dep
-  rewrites; Bucket C's violations no longer fire (file unchanged, rules
-  silently relaxed — cause unknown, watched in `plans/README.md`). With
-  Bucket C empty there is no auto-fix-the-resume-effect step, so 005's test
-  net is no longer a prerequisite. 005 remains independently valuable.
+- **Effort**: **L** (was M at planning; re-estimated 2026-07-01 — the real
+  error set is ~3× larger than the planning-time ~21 and spans 20 files, 11
+  of which the original plan never listed; `agent-chat.tsx` alone has 17)
+- **Risk**: MED (Bucket C is real and touches the untested
+  resume-after-refresh path; everything else is mechanical or review-only)
+- **Depends on**: **005 (RESTORED 2026-07-01)** — the test runner is the
+  safety net for Bucket C's manual hook-dep rewrites on
+  `session-chat-page.tsx`'s resume effect. 005 is DONE. (The 2026-06-28
+  reconcile removed this dependency on the incorrect claim that Bucket C was
+  empty — see the drift note below; that claim was wrong.)
 - **Category**: dx
-- **Planned at**: commit `d1daea6`, 2026-06-27; **drifted at reconciliation
-  against `1b9c9ac` on 2026-06-28** — see "Drift note (2026-06-28)" below
-  before executing.
+- **Planned at**: commit `d1daea6`, 2026-06-27; **re-drifted at
+  re-reconciliation against `ba0cd3a` on 2026-07-01** — see "Drift note
+  (2026-07-01)" below before executing. The earlier "Drift note (2026-06-28)"
+  is superseded and removed; its claims were incorrect.
 
-## Drift note (2026-06-28 reconciliation against `1b9c9ac`)
+## Drift note (2026-07-01 re-reconciliation against `ba0cd3a`)
 
-Re-ran `pnpm check` against current HEAD: **18 errors** (down from ~21 at
-`d1daea6`). The bucket map in "Current state" below is the planning-time
-picture; **Step 1's "trust Step 1 over the numbers" instruction is correct
-and you must follow it**, but the deltas are significant enough to enumerate
-up front so you can adapt the buckets:
+Re-ran `pnpm check --max-diagnostics=300` on current HEAD: **60 errors + 3
+warnings + 7 infos across 20 files** (70 diagnostics total). To confirm this
+isn't a between-commit drift, I checked out `d1daea6` and `1b9c9ac` in
+disposable git worktrees, symlinked the current tree's `node_modules/ultracite`
+and `node_modules/@biomejs/biome` (pinned `@biomejs/biome@2.5.1` +
+`ultracite@7.8.3`, `biome.jsonc` unchanged, all in-scope files byte-identical
+across the three commits), and ran `biome check` directly: **all three
+commits yield the same 60/3/7 count.** Conclusion: the 2026-06-28 reconcile's
+"18 errors / Bucket C empty / session-chat-page violations stopped firing"
+narrative was wrong — most likely it ran `pnpm check` in an environment where
+`ultracite/biome/{core,react,next}` didn't resolve (so biome silently linted
+with a degraded rule set) and confabulated the 18 from there. The
+`session-chat-page.tsx` resume-effect violations fire at `:73,:277,:308,:316`
+plus `noEmptyBlockStatements` at `:139`. **Bucket C is real; Step 5 is
+restored.**
 
-- **Bucket C (Step 5) is EMPTY — skip it.** All 5×
-  `useExhaustiveDependencies` (`session-chat-page.tsx:73,277,308`) and the 1×
-  `noExcessiveCognitiveComplexity` (`session-chat-page.tsx:205`) **no longer
-  fire**. `session-chat-page.tsx` is byte-identical to `d1daea6`
-  (`git diff --stat d1daea6..HEAD -- app/_components/session-chat-page.tsx` →
-  empty); `biome.jsonc`, `@biomejs/biome@2.5.1`, `ultracite@7.8.3` all
-  unchanged — the rules relaxed without any tracked change (cause unknown;
-  `plans/README.md` flags it as a watch item). With Bucket C gone, the plan's
-  005 dependency is dropped (see Status). Do NOT try to "restore" the
-  violations; just skip Step 5 entirely.
-- **Errors 006 cited that STILL match** — these buckets proceed as written:
-  - Bucket D: `app/layout.tsx:103` + `components/auth/auth-display.tsx:36`
-    (`noDangerouslySetInnerHtml`) — unchanged.
-  - Bucket B: `components/auth/user-menu.tsx:92` (`noImgElement` +
-    `useImageSize`) — unchanged.
-  - Bucket A: `app/api/auth/[...all]/route.ts:16,20` (`useAwait`×2),
-    `:30` (`noUnusedVariables`), `agent/tools/get_weather.ts:9` (`useAwait`),
-    `home-chat-page.tsx:138` (`noEmptyBlockStatements`) — unchanged.
-  - `home-chat-page.tsx:61,65` (`useExhaustiveDependencies`) — STILL fire
-    (these are on `home-chat-page.tsx`, the home submit, NOT the resume
-    effect; 006 originally grouped them with Bucket C — they were always
-    lower-risk than `session-chat-page.tsx`'s. Reclassify as Bucket A-adjacent:
-    they're FIXABLE and on a submit hook, not a resume effect; read each to
-    decide bug-vs-intentional, but the resume-effect caution does not apply).
-  - `agent-chat-shell.tsx:355` (3 a11y: `useKeyWithClickEvents`,
-    `noStaticElementInteractions`, `noNoninteractiveElementInteractions`) —
-    006 listed these but had no bucket; treat as a new Bucket E (a11y, low-risk,
-    see below).
-- **NEW errors 006 did NOT cite** — add to scope at Step 1:
-  - `components/chat/composer.tsx:145` (`noNestedTernary`),
-    `:180` (`useAriaPropsSupportedByRole`, `noNoninteractiveTabindex`) —
-    3 a11y/style errors in a file 006 never listed. New Bucket E.
-  - `app/_components/agent-chat-shell.tsx:100` (`noDocumentCookie`) — new.
-  - `app/_components/agent-chat-shell.tsx:404` (`noDangerouslySetInnerHtml`)
-    — **fold into Bucket D** (same rule, same static-vs-runtime review). 006
-    had agent-chat-shell.tsx in-scope for a11y at line 355 only; this is a
-    second, uncited site.
-  - `components/auth/sign-in-button.tsx:65` (`useOptionalChain`) — 006 listed
-    sign-in-button.tsx in the in-scope file set but its cited
-    `useOptionalChain` was on the auth route; Step 1 shows it here instead.
-    Bucket A.
-- **Revised bucket summary for execution**: A (mechanical: auth route
-  `useAwait`/`noUnusedVariables`/`useOptionalChain` + `get_weather.ts`
-  `useAwait` + `home-chat-page.tsx` empty block + `home-chat-page.tsx`
-  hook-deps + `sign-in-button.tsx:65` optional chain) → B (`user-menu.tsx`
-  `<img>`) → D (`layout.tsx` + `auth-display.tsx` + `agent-chat-shell.tsx:404`
-  `dangerouslySetInnerHtml` — all need static-vs-runtime review) → E
-  (a11y/style: `agent-chat-shell.tsx:355`×3 + `composer.tsx`×3 +
-  `agent-chat-shell.tsx:100` `noDocumentCookie`). **Bucket C is deleted.**
+The bucket map in "Current state" below is the authoritative current picture
+(2026-07-01). **Step 1's "trust Step 1's `pnpm check` output over the
+numbers" instruction is still correct** — re-run it at execution time and
+reconcile against the list below; if the set changed substantially, STOP.
 
-The plan body below is left UNEDITED (it records the planning-time state and
-the Step 1 re-audit instruction reads it correctly). Override per the deltas
-above; trust Step 1's `pnpm check` output as the source of truth.
+**Authoritative error set at `ba0cd3a` (70 diagnostics = 60 errors + 3 warn +
+7 info), by file then rule.** Levels: `×` = error, `w` = warning, `i` = info.
+"FIXABLE" means biome's unsafe-fix is available (do NOT trust it on
+`useExhaustiveDependencies` — see Step 5).
+
+```
+app/_components/agent-chat.tsx  (17)
+  :349    noExcessiveCognitiveComplexity          i  (complexity 24)
+  :653    useTopLevelRegex                         ×
+  :671    noEmptyBlockStatements                   ×  (catch {})
+  :683    noExcessiveCognitiveComplexity          i  (complexity 39, AgentChatSession)
+  :753    noEmptyBlockStatements                   ×  (useRef(() => {}))
+  :994    noNestedTernary                          ×
+  :1069   useExhaustiveDependencies        FIXABLE ×  (missing localPendingUserMessageRef.current)
+  :1070   noExcessiveCognitiveComplexity          i  (complexity 35, sendMessage)
+  :1349   useExhaustiveDependencies        FIXABLE ×  (missing activeChat?.events)  [×3 captures + 2 "more specific than captures"]
+  :1349   useExhaustiveDependencies               ×  (more specific than captures: activeChat?.title / activeChat?.events.length / activeChat)
+  :1424   noExcessiveCognitiveComplexity          i  (complexity 34)
+  :1529   useExhaustiveDependencies        FIXABLE ×  (extra dep: displayError)
+  :1895   noNonNullAssertion                       ×
+
+app/_components/session-chat-page.tsx  (5)   [BUCKET C — resume effect]
+  :73     useExhaustiveDependencies        FIXABLE ×  (extra dep: chatId)
+  :139    noEmptyBlockStatements                   ×  (catch {})
+  :205    noExcessiveCognitiveComplexity          i  (complexity 30, the resume void async IIFE)
+  :277    useExhaustiveDependencies        FIXABLE ×  (extra dep: chatId)
+  :308    useExhaustiveDependencies        FIXABLE ×  (extra dep: chatId)
+  :316    useExhaustiveDependencies        FIXABLE ×  (extra dep: clientError)
+
+app/_components/home-chat-page.tsx  (3)
+  :61     useExhaustiveDependencies        FIXABLE ×  (extra dep: clientError)
+  :65     useExhaustiveDependencies        FIXABLE ×  (extra dep: submitting)
+  :138    noEmptyBlockStatements                   ×  (onStop={() => {}})
+
+app/_components/agent-chat-shell.tsx  (5)
+  :100    noDocumentCookie                         ×
+  :355    noStaticElementInteractions              w
+  :355    noNoninteractiveElementInteractions      w
+  :355    useKeyWithClickEvents                    w
+  :404    noDangerouslySetInnerHtml                 ×  [BUCKET D]
+
+app/api/auth/[...all]/route.ts  (3)
+  :16     useAwait                                  ×  (GET)
+  :20     useAwait                                  ×  (POST)
+  :30     noUnusedVariables                 FIXABLE ×  (redirectToAuthError)
+
+app/layout.tsx  (1)                              [BUCKET D]
+  :103    noDangerouslySetInnerHtml                 ×
+
+components/auth/auth-display.tsx  (1)            [BUCKET D]
+  :36     noDangerouslySetInnerHtml                 ×
+
+components/auth/user-menu.tsx  (2)
+  :92     noImgElement                             w
+  :92     useImageSize                              ×
+
+components/auth/sign-in-button.tsx  (1)
+  :65     useOptionalChain                 FIXABLE ×
+
+components/chat/composer.tsx  (3)
+  :145    noNestedTernary                           ×
+  :180    useAriaPropsSupportedByRole               ×
+  :180    noNoninteractiveTabindex          FIXABLE ×
+
+components/chat/message/index.tsx  (3)
+  :127    noUnusedFunctionParameters                ×  (canRespond)
+  :129    noUnusedFunctionParameters                ×  (onInputResponses)
+  :141    useDefaultSwitchClause                    ×
+
+components/chat/message/tool-group.tsx  (2)
+  :49     noNonNullAssertion                        ×
+  :90     noNonNullAssertion                        ×
+
+components/chat/message/tool-status.ts  (9)  [plan 008's target module — DO NOT touch here unless 008 has landed]
+  :46     useDefaultSwitchClause                    ×
+  :89     useDefaultSwitchClause                    ×
+  :106    noNonNullAssertion                        ×
+  :153    noExcessiveCognitiveComplexity           i  (complexity 26)
+  :239    useTopLevelRegex                          ×
+  :250    useTopLevelRegex                          ×
+  :251    useTopLevelRegex                          ×
+  :255    useTopLevelRegex                          ×
+  :269    useTopLevelRegex                          ×
+
+components/chat/message/use-streaming-text.ts  (8)
+  :111    noExcessiveCognitiveComplexity           i  (complexity 31)
+  :122,:124,:126,:128,:133,:135,:137  noNestedTernary  ×  (7 nested-ternary diagnostics in nextStreamingText)
+
+components/chat/sidebar.tsx  (1)
+  :208    noNestedTernary                           ×
+
+drizzle.config.ts  (1)
+  :8      noNonNullAssertion                        ×
+
+lib/auth-url.ts  (2)
+  :29     useTopLevelRegex                          ×
+  :39     useTopLevelRegex                          ×
+
+lib/db/client.ts  (1)
+  :3      noNamespaceImport                         ×
+
+lib/db/queries.ts  (1)
+  :70     useAtIndex                       FIXABLE ×
+
+agent/tools/get_weather.ts  (1)
+  :9      useAwait                                  ×
+```
+
+**Revised bucket map for execution (supersedes the 2026-06-28 bucket map):**
+
+- **Bucket A — mechanical & safe (auto-fixable or trivial, no behavior risk):**
+  `app/api/auth/[...all]/route.ts:16,20` (`useAwait`×2 — add `await`),
+  `:30` (`noUnusedVariables` — delete dead `redirectToAuthError` after
+  confirming no callers),
+  `components/auth/sign-in-button.tsx:65` (`useOptionalChain`),
+  `agent/tools/get_weather.ts:9` (`useAwait`),
+  `lib/db/queries.ts:70` (`useAtIndex` → `.at(-1)`),
+  `home-chat-page.tsx:138` + `session-chat-page.tsx:139` + `agent-chat.tsx:671`
+  + `agent-chat.tsx:753` (`noEmptyBlockStatements`×4 — read each; see Step 3).
+- **Bucket B — `<img>` in `components/auth/user-menu.tsx:92`** (`noImgElement`
+  warn + `useImageSize` error). See Step 4.
+- **Bucket C — resume-effect hook deps (HIGHEST RISK, manual judgement, 005
+  safety net required):** `session-chat-page.tsx:73,277,308,316` +
+  `home-chat-page.tsx:61,65` + `agent-chat.tsx:1069,1349,1529`
+  (`useExhaustiveDependencies`×9, all "extra dep" or "missing dep" or "more
+  specific than captures"). Plus `session-chat-page.tsx:205` and
+  `agent-chat.tsx:1424` `noExcessiveCognitiveComplexity` (info-level, NOT
+  errors — do NOT fix these for the gate; they're infos and don't fail
+  `pnpm check`. Leave them.). See Step 5.
+- **Bucket D — `noDangerouslySetInnerHtml` (REVIEW-REQUIRED, do NOT
+  auto-fix):** `app/layout.tsx:103`, `components/auth/auth-display.tsx:36`,
+  `app/_components/agent-chat-shell.tsx:404`. See Step 6.
+- **Bucket E — a11y / style / perf (low-risk, mostly mechanical):**
+  `agent-chat-shell.tsx:355`×3 (a11y warnings: `noStaticElementInteractions`,
+  `noNoninteractiveElementInteractions`, `useKeyWithClickEvents`),
+  `agent-chat-shell.tsx:100` (`noDocumentCookie`),
+  `composer.tsx:145` (`noNestedTernary`), `:180`×2
+  (`useAriaPropsSupportedByRole`, `noNoninteractiveTabindex`),
+  `sidebar.tsx:208` (`noNestedTernary`),
+  `use-streaming-text.ts` `noNestedTernary`×7 (the `nextStreamingText` step
+  table — refactor to a lookup or if-else chain),
+  `message/index.tsx:141` + `tool-status.ts:46,89` (`useDefaultSwitchClause`
+  — add `default: return …` / `default: break`),
+  `message/index.tsx:127,129` (`noUnusedFunctionParameters` — `canRespond`/
+  `onInputResponses` unused in `AgentMessagePart`; read before removing —
+  they may be props forwarded for future use, in which case prefix `_` or
+  `biome-ignore` with reason),
+  `tool-group.tsx:49,90` + `tool-status.ts:106` + `agent-chat.tsx:1895` +
+  `drizzle.config.ts:8` (`noNonNullAssertion`×5 — replace `arr[i]!` with a
+  guarded `arr[i] ?? …` or `.at(i)` with a fallback; `drizzle.config.ts:8`
+  `process.env.DATABASE_URL!` → a real `throw if unset` guard or `biome-ignore`
+  with reason),
+  `agent-chat.tsx:653` + `lib/auth-url.ts:29,39` + `tool-status.ts:239,250,
+  251,255,269` (`useTopLevelRegex`×8 — hoist regex literals to module-scope
+  consts),
+  `lib/db/client.ts:3` (`noNamespaceImport` — `import * as schema` → named
+  imports; verify `drizzle-orm/neon-http` typing still works with named).
+- **`tool-status.ts` has 9 diagnostics but is plan 008's target module.**
+  If 008 has NOT landed, you may still fix these lint errors here (they're
+  real), but be careful not to change exported signatures that 008's tests
+  will pin. If 008 HAS landed, its tests are the safety net — run
+  `pnpm test:run components/chat/message/tool-status.test.ts` after each
+  change to that file.
+
+The plan body below is left UNEDITED (it records the planning-time state);
+override per the bucket map and file list above; trust Step 1's `pnpm check`
+output as the source of truth.
 
 
 
