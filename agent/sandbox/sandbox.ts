@@ -14,7 +14,6 @@ export default defineSandbox({
     vercel: {
       networkPolicy: "deny-all",
       resources: { vcpus: 1 },
-      runtime: "node24",
       tags: { project: "eve-chat" },
       timeout: DEFAULT_SANDBOX_TIMEOUT_MS,
     },
