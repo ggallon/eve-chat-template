@@ -108,6 +108,38 @@ function rememberStreamingText(streamKey: string, text: string) {
   }
 }
 
+function getStep(catchUp: boolean, remaining: number) {
+  if (catchUp) {
+    if (remaining > 160) {
+      return 18;
+    }
+    if (remaining > 80) {
+      return 12;
+    }
+    if (remaining > 32) {
+      return 7;
+    }
+    if (remaining > 12) {
+      return 4;
+    }
+    return 2;
+  }
+
+  if (remaining > 160) {
+    return 6;
+  }
+  if (remaining > 80) {
+    return 5;
+  }
+  if (remaining > 32) {
+    return 3;
+  }
+  if (remaining > 12) {
+    return 2;
+  }
+  return 1;
+}
+
 function nextStreamingText(current: string, target: string, catchUp = false) {
   if (current === target) {
     return current;
@@ -118,25 +150,7 @@ function nextStreamingText(current: string, target: string, catchUp = false) {
   }
 
   const remaining = target.length - current.length;
-  const step = catchUp
-    ? remaining > 160
-      ? 18
-      : remaining > 80
-        ? 12
-        : remaining > 32
-          ? 7
-          : remaining > 12
-            ? 4
-            : 2
-    : remaining > 160
-      ? 6
-      : remaining > 80
-        ? 5
-        : remaining > 32
-          ? 3
-          : remaining > 12
-            ? 2
-            : 1;
+  const step = getStep(catchUp, remaining);
 
   return target.slice(0, current.length + Math.min(remaining, step));
 }

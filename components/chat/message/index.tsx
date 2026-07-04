@@ -139,8 +139,6 @@ function AgentMessagePart({
   readonly streamKey: string;
 }) {
   switch (part.type) {
-    case "step-start":
-      return null;
     case "text":
       return isUser ? (
         <UserTextPart text={part.text} />
@@ -158,7 +156,10 @@ function AgentMessagePart({
           text={part.text}
         />
       );
-    case "dynamic-tool":
+    // case "authorization";
+    // case "dynamic-tool":
+    // case "step-start":
+    default:
       return null;
   }
 }

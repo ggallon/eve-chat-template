@@ -44,17 +44,18 @@ function isConnectionSearchTool(part: EveDynamicToolPart) {
 
 export function getToolStatus(part: EveDynamicToolPart): ToolStatus {
   switch (part.state) {
-    case "input-streaming":
-    case "input-available":
-    case "approval-requested":
-    case "approval-responded":
-      return "running";
     case "output-available":
       return "completed";
     case "output-denied":
       return "denied";
     case "output-error":
       return "error";
+    // case "input-streaming":
+    // case "input-available":
+    // case "approval-requested":
+    // case "approval-responded":
+    default:
+      return "running";
   }
 }
 

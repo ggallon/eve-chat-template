@@ -4,7 +4,7 @@ import { Markdown } from "@/components/chat/markdown";
 import { useStreamingText } from "./use-streaming-text";
 
 export function UserTextPart({ text }: { readonly text: string }) {
-  return <div className="whitespace-pre-wrap break-words">{text}</div>;
+  return <div className="wrap-break-word whitespace-pre-wrap">{text}</div>;
 }
 
 export function AssistantTextPart({

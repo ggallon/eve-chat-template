@@ -28,6 +28,9 @@
       "performance": {
         "noImgElement": "warn"
       },
+      "security": {
+        "noDangerouslySetInnerHtml": "warn"
+      },
       "style": {
         "useConsistentTypeDefinitions": "off"
       }
