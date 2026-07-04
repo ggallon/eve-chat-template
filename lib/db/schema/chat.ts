@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -22,8 +22,12 @@ export const chat = pgTable(
     eveSession: jsonb("eve_session").$type<SessionState | null>(),
     pendingUserMessage: text("pending_user_message"),
     pendingUserMessageCreatedAt: timestamp("pending_user_message_created_at"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     index("idx_chat_user_updated").on(table.userId, table.updatedAt),
@@ -43,20 +47,15 @@ export const chatEvent = pgTable(
       .$type<HandleMessageStreamEvent>()
       .notNull()
       .default(sql`'{}'::jsonb`),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     index("idx_chat_event_chat").on(table.chatId),
     uniqueIndex("idx_chat_event_chat_index").on(table.chatId, table.eventIndex),
   ]
 );
-
-export const chatRelations = relations(chat, ({ one }) => ({
-  user: one(user, {
-    fields: [chat.userId],
-    references: [user.id],
-  }),
-}));
 
 export type Chat = typeof chat.$inferSelect;
 export type ChatEvent = typeof chatEvent.$inferSelect;

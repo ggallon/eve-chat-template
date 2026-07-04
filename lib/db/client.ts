@@ -1,8 +1,8 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
-import * as schema from "@/lib/db/schema";
+import { relations } from "@/lib/db/relations";
 
-let database: NeonHttpDatabase<typeof schema> | null = null;
+let database: NeonHttpDatabase<typeof relations> | null = null;
 
 export function getDb() {
   if (!database) {
@@ -14,13 +14,13 @@ export function getDb() {
       );
     }
 
-    database = drizzle({ client: neon(url), schema });
+    database = drizzle({ client: neon(url), relations });
   }
 
   return database;
 }
 
-export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
+export const db = new Proxy({} as NeonHttpDatabase<typeof relations>, {
   get(_, prop) {
     return (getDb() as unknown as Record<string | symbol, unknown>)[prop];
   },

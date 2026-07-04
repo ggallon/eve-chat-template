@@ -26,7 +26,8 @@
         "noVoid": "off"
       },
       "performance": {
-        "noImgElement": "warn"
+        "noImgElement": "warn",
+        "noNamespaceImport": "warn"
       },
       "security": {
         "noDangerouslySetInnerHtml": "warn"

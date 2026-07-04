@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
@@ -9,12 +8,10 @@ export const userProfiles = pgTable("user_profiles", {
   timezone: text("timezone").notNull().default("UTC"),
   locale: text("locale").notNull().default("fr"),
   bio: text("bio").notNull().default(""),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
-
-export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
-  user: one(user, {
-    fields: [userProfiles.userId],
-    references: [user.id],
-  }),
-}));

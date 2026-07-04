@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { betterAuth } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
 import { getAppUrlHost, getEffectiveAppUrl } from "@/lib/auth-url";
 import { db } from "@/lib/db/client";
+import { account, session, user, verification } from "./db/schema/auth";
 
 const vercelClientId =
   process.env.NEXT_PUBLIC_VERCEL_APP_CLIENT_ID?.trim() ?? "";
@@ -34,6 +35,7 @@ const allowedHosts = [
 ].filter((host): host is string => Boolean(host));
 
 export const auth = betterAuth({
+  experimental: { joins: true },
   baseURL: {
     allowedHosts,
     fallback: authBaseUrl,
@@ -41,6 +43,7 @@ export const auth = betterAuth({
   },
   database: drizzleAdapter(db, {
     provider: "pg",
+    schema: { user, account, verification, session },
   }),
   account: {
     encryptOAuthTokens: true,

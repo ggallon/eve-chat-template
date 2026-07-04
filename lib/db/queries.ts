@@ -5,7 +5,7 @@ import { isChatTurnSettledEvent } from "@/lib/chat/events";
 import { createFallbackTitle, DEFAULT_CHAT_TITLE } from "@/lib/chat/title";
 import type { ActiveChat, ChatListItem, ChatListPage } from "@/lib/chat/types";
 import { db } from "@/lib/db/client";
-import { chat, chatEvent } from "@/lib/db/schema";
+import { chat, chatEvent } from "@/lib/db/schema/chat";
 
 const CHAT_HISTORY_PAGE_SIZE = 20;
 

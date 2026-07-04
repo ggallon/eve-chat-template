@@ -25,11 +25,12 @@ const updateSchema = z.object({
     .string()
     .min(1)
     .max(4000)
-    .describe(
-      "Full replacement prose for this category. The previous content is discarded, this is not a delta. " +
+    .meta({
+      description:
+        "Full replacement prose for this category. The previous content is discarded, this is not a delta. " +
         "Can't be blank: to remove a detail, rewrite the category without it; to fully clear one, use a short neutral placeholder instead. " +
-        "Never include passwords, access tokens, payment details, private keys, or one-time codes."
-    ),
+        "Never include passwords, access tokens, payment details, private keys, or one-time codes.",
+    }),
 });
 
 export default defineTool({
@@ -42,25 +43,14 @@ export default defineTool({
     "approves, no separate confirmation is needed in chat beforehand. The result reports success per " +
     "category; check it rather than assuming the whole batch saved.",
   inputSchema: z.object({
-    reason: z
-      .string()
-      .min(1)
-      .max(400)
-      .describe(
-        "One sentence on why these updates are worth remembering. Shown to the user for approval."
-      ),
-    updates: z
-      .array(updateSchema)
-      .min(1)
-      .max(5)
-      .refine(
-        (updates) =>
-          new Set(updates.map((u) => u.category)).size === updates.length,
-        { message: "Each category can only appear once per call." }
-      )
-      .describe(
-        "Category updates to save together: one entry per category, up to all 5."
-      ),
+    reason: z.string().min(1).max(400).meta({
+      description:
+        "One sentence on why these updates are worth remembering. Shown to the user for approval.",
+    }),
+    updates: z.array(updateSchema).min(1).max(5).meta({
+      description:
+        "Category updates to save together: one entry per category, up to all 5.",
+    }),
   }),
   approval: always(),
   async execute({ updates }, ctx) {

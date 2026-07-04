@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "next build",
+    "db:check": "drizzle-kit check",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:production": "vercel env run -e production -- pnpm db:migrate",
@@ -25,6 +26,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.0-rc.1",
     "@neondatabase/serverless": "1.1.0",
     "@shikijs/core": "4.3.0",
     "@shikijs/engine-javascript": "4.3.0",
@@ -39,11 +41,11 @@
     "@vercel/connect": "0.3.2",
     "@vercel/speed-insights": "2.0.0",
     "ai": "7.0.15",
-    "better-auth": "1.6.23",
+    "better-auth": "1.7.0-rc.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
-    "drizzle-orm": "0.45.2",
+    "drizzle-orm": "1.0.0-rc.4",
     "eve": "0.19.0",
     "lucide-react": "1.23.0",
     "next": "16.2.10",
@@ -66,7 +68,7 @@
     "@types/react-dom": "19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20260702.3",
     "@vitejs/plugin-react": "6.0.3",
-    "drizzle-kit": "0.31.10",
+    "drizzle-kit": "1.0.0-rc.4",
     "jsdom": "29.1.1",
     "microsandbox": "0.6.2",
     "typescript": "6.0.3",
