@@ -7,6 +7,7 @@ import { AuthDisplayPreHydrationHead } from "@/components/auth/auth-display";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
+import { cn } from "@/lib/ui/cn";
 
 const title = "eve Chat";
 const description = "Build your own chat agent with eve.";
@@ -43,6 +44,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
 });
+
+const fontVariables = cn(geistSans.variable, geistMono.variable);
 
 export const metadata: Metadata = {
   metadataBase: resolveMetadataBase(),
@@ -93,11 +96,7 @@ export default function RootLayout({
   readonly children: ReactNode;
 }) {
   return (
-    <html
-      className={`${geistSans.variable} ${geistMono.variable}`}
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html className={fontVariables} lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{ __html: themeScript }}

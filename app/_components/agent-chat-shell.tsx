@@ -37,7 +37,7 @@ import type {
   EnabledConnections,
   Viewer,
 } from "@/lib/chat/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 import { ChatShellProvider } from "./chat-shell-context";
 
 export function AgentChatShell({
@@ -466,22 +466,26 @@ function ShareChatButton() {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          aria-label={copied ? "Copied chat link" : "Copy chat link"}
-          className="text-muted-foreground hover:text-foreground"
-          onClick={handleCopyLink}
-          size="icon-sm"
-          type="button"
-          variant="ghost"
-        >
-          {copied ? (
-            <CheckIcon className="size-4" />
-          ) : (
-            <UploadIcon className="size-4" />
-          )}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <span className="inline-block w-fit">
+            <Button
+              aria-label={copied ? "Copied chat link" : "Copy chat link"}
+              className="text-muted-foreground hover:text-foreground"
+              onClick={handleCopyLink}
+              size="icon-sm"
+              type="button"
+              variant="ghost"
+            >
+              {copied ? (
+                <CheckIcon className="size-4" />
+              ) : (
+                <UploadIcon className="size-4" />
+              )}
+            </Button>
+          </span>
+        }
+      />
       <TooltipContent side="bottom">
         {copied ? "Copied" : "Copy link"}
       </TooltipContent>

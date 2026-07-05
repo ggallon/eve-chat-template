@@ -33,7 +33,7 @@ import {
   ChatScrollButton,
 } from "@/components/chat/conversation";
 import { AgentMessage } from "@/components/chat/message";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   createAuthorizationDeclinedEvents,
   createConnectionClientContext,
@@ -1056,12 +1056,18 @@ function ConnectionAuthorizationPrompt({
             </p>
             <div className="mt-2.5 flex items-center gap-2">
               {authorization.url ? (
-                <Button asChild size="xs" type="button">
-                  <a href={authorization.url} rel="noreferrer" target="_blank">
-                    Connect
-                    <ExternalLinkIcon className="size-3" />
-                  </a>
-                </Button>
+                <a
+                  className={buttonVariants({
+                    variant: "default",
+                    size: "xs",
+                  })}
+                  href={authorization.url}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Connect
+                  <ExternalLinkIcon className="size-3" />
+                </a>
               ) : null}
               <Button
                 disabled={isSkipping}

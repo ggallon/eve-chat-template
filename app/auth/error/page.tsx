@@ -1,7 +1,7 @@
 import { AlertCircleIcon, ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 const SIGN_IN_WITH_VERCEL_URL =
   "https://vercel.com/docs/sign-in-with-vercel/getting-started#prerequisites";
@@ -67,30 +67,35 @@ function AuthErrorCard({
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Button asChild className="h-8 rounded-md px-3 text-sm">
-          <Link href="/">
-            <ArrowLeftIcon className="size-4" />
-            Back to chat
-          </Link>
-        </Button>
-        <Button
-          asChild
-          className="h-8 rounded-md px-3 text-sm"
-          variant="outline"
+        <Link
+          className={buttonVariants({
+            variant: "default",
+            size: "default",
+            className: "h-8 rounded-md px-3 text-sm",
+          })}
+          href="/"
         >
-          <a
-            href={
-              error === "email_not_found"
-                ? SIGN_IN_WITH_VERCEL_SCOPES_URL
-                : SIGN_IN_WITH_VERCEL_URL
-            }
-            rel="noreferrer"
-            target="_blank"
-          >
-            Vercel OAuth docs
-            <ExternalLinkIcon className="size-3.5" />
-          </a>
-        </Button>
+          <ArrowLeftIcon className="size-4" />
+          Back to chat
+        </Link>
+
+        <a
+          className={buttonVariants({
+            variant: "outline",
+            size: "default",
+            className: "h-8 rounded-md px-3 text-sm",
+          })}
+          href={
+            error === "email_not_found"
+              ? SIGN_IN_WITH_VERCEL_SCOPES_URL
+              : SIGN_IN_WITH_VERCEL_URL
+          }
+          rel="noreferrer"
+          target="_blank"
+        >
+          Vercel OAuth docs
+          <ExternalLinkIcon className="size-3.5" />
+        </a>
       </div>
     </div>
   );

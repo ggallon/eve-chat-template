@@ -20,7 +20,7 @@ import {
   getChatMessageLength,
   MAX_CHAT_MESSAGE_CHARS,
 } from "@/lib/chat/limits";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 
 export function ChatComposer({
   autoFocus = true,
@@ -176,11 +176,13 @@ export function ChatComposer({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <div aria-label={disabledReason} className="min-w-0" tabIndex={0}>
-          {form}
-        </div>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <div aria-label={disabledReason} className="min-w-0" tabIndex={0}>
+            {form}
+          </div>
+        }
+      />
       <TooltipContent side="top">{disabledReason}</TooltipContent>
     </Tooltip>
   );

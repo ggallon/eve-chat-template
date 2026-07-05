@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 import {
   InputRequestActions,
   ToolNameLabel,
@@ -161,7 +161,7 @@ function ToolCallItem({
 
   return (
     <Collapsible className="py-0.5" onOpenChange={setOpen} open={open}>
-      <CollapsibleTrigger asChild>{button}</CollapsibleTrigger>
+      <CollapsibleTrigger render={button} />
       <CollapsibleContent className="mt-1 ml-5">
         <ToolDetails
           canRespond={canRespond}

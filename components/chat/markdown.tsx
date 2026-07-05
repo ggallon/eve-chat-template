@@ -5,7 +5,7 @@ import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import { type ComponentProps, memo } from "react";
 import { Streamdown } from "streamdown";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 
 const streamdownPlugins = { code, math, mermaid };
 

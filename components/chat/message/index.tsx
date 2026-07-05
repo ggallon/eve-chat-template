@@ -2,7 +2,7 @@
 
 import type { EveDynamicToolPart, EveMessage, EveMessagePart } from "eve/react";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 import { ReasoningPart } from "./reasoning-part";
 import { AssistantTextPart, UserTextPart } from "./text-part";
 import { ToolGroup } from "./tool-group";

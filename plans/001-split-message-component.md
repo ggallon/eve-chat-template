@@ -725,7 +725,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 
 export function ReasoningPart({
   isStreaming,
@@ -775,7 +775,7 @@ import { CheckIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 import { formatPayload } from "./format";
 import {
   formatToolName,
@@ -960,7 +960,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 import {
   InputRequestActions,
   ToolNameLabel,
@@ -1170,7 +1170,7 @@ import type {
   EveMessagePart,
 } from "eve/react";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 import { ReasoningPart } from "./reasoning-part";
 import { AssistantTextPart, UserTextPart } from "./text-part";
 import { ToolGroup } from "./tool-group";

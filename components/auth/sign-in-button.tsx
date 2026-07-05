@@ -6,7 +6,7 @@ import { useState } from "react";
 import { VercelIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 
 export function SignInButton({
   callbackPath,

@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 
 const EVE_URL = "https://vercel.com/eve";
 const GITHUB_URL = "https://github.com/vercel-labs/eve-chat-template";

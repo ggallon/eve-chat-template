@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { TemplateFooterLinks } from "@/components/chat/template-footer-links";
 import { VercelIcon } from "@/components/icons";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/ui/cn";
 
 const activeRowClass = "bg-muted/50 text-foreground";
 const inactiveRowClass = "text-muted-foreground";
