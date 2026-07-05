@@ -60,7 +60,7 @@ export function UserMenu({ viewer }: { readonly viewer: Viewer }) {
           <DropdownMenuItem
             aria-busy={signingOut}
             disabled={signingOut}
-            onSelect={(event) => {
+            onClick={(event) => {
               event.preventDefault();
 
               if (signingOut) {

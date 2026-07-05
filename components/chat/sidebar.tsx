@@ -172,9 +172,10 @@ export function ChatSidebar({
                     <DropdownMenuContent align="end" sideOffset={6}>
                       <DropdownMenuGroup>
                         <DropdownMenuItem
-                          onSelect={(event) => {
+                          onClick={async (event) => {
                             event.preventDefault();
-                            void onDeleteChat(chat.id);
+                            console.log("DELETE-onClick", event);
+                            void (await onDeleteChat(chat.id));
                           }}
                           variant="destructive"
                         >
