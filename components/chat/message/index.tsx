@@ -8,8 +8,6 @@ import { AssistantTextPart, UserTextPart } from "./text-part";
 import { ToolGroup } from "./tool-group";
 import type { OnInputResponses } from "./types";
 
-export type { AgentInputResponse } from "./types";
-
 export function AgentMessage({
   canRespond,
   isStreaming,

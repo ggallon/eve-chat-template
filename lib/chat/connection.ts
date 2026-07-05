@@ -71,7 +71,7 @@ export function createConnectionClientContext(
   return "The user has disabled all external connections for this turn. Do not search or call connection tools unless the user enables a connection first.";
 }
 
-export function toPendingAuthorization(
+function toPendingAuthorization(
   event: AuthorizationRequiredStreamEvent
 ): PendingConnectionAuthorization {
   const challenge = event.data.authorization;

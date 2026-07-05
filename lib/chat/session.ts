@@ -12,7 +12,7 @@ export function createInitialSessionState(): SessionState {
   return { streamIndex: 0 };
 }
 
-export function advanceBrowserSession({
+function advanceBrowserSession({
   baseStreamIndex,
   continuationToken,
   events,
@@ -81,7 +81,7 @@ export function normalizeSendInput(input: SendTurnInput) {
   return typeof input === "string" ? { message: input } : input;
 }
 
-export function createHandleMessageBody({
+function createHandleMessageBody({
   input,
   session,
 }: {
@@ -143,7 +143,7 @@ export function isSnapshotForCurrentSession(
 const EVE_CREATE_SESSION_PATH = "/eve/v1/session";
 const EVE_SESSION_ID_HEADER = "x-eve-session-id";
 
-export async function postSessionTurn(
+async function postSessionTurn(
   session: SessionState,
   input: ReturnType<typeof normalizeSendInput>
 ) {

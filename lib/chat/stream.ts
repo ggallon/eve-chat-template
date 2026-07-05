@@ -11,7 +11,7 @@ const STREAM_DISCONNECT_RECONNECT_ATTEMPTS = 3;
 const STREAM_IDLE_TIMEOUT_MS = 120_000;
 const STREAM_RECONNECT_DELAY_MS = 350;
 
-export function isStreamDisconnectError(error: unknown) {
+function isStreamDisconnectError(error: unknown) {
   if (isAbortError(error)) {
     return true;
   }
@@ -33,7 +33,7 @@ export function isStreamDisconnectError(error: unknown) {
   );
 }
 
-export async function openStreamBody({
+async function openStreamBody({
   sessionId,
   signal,
   startIndex,

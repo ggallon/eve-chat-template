@@ -3,7 +3,7 @@ import { defaultMessageReducer } from "eve/react";
 
 import { areEqualJsonValues } from "./json-utils";
 
-export function areSameStreamEvent(
+function areSameStreamEvent(
   left: HandleMessageStreamEvent,
   right: HandleMessageStreamEvent | undefined
 ) {
@@ -23,7 +23,7 @@ export function appendUniqueStreamEvent(
   return [...events, event];
 }
 
-export function countSharedEventPrefix(
+function countSharedEventPrefix(
   events: readonly HandleMessageStreamEvent[],
   knownEvents: readonly HandleMessageStreamEvent[]
 ) {
