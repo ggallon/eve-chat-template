@@ -3,7 +3,6 @@ import { z } from "zod";
 import { db } from "@/lib/db/client";
 import { type UserMemory, userMemory } from "@/lib/db/schema/memory";
 import { errorResponse } from "@/lib/server/http";
-import type { UserProfile } from "../profile/types";
 import { MEMORY_CATEGORIES } from "./constants";
 import { normalizeMemoryContent, parseMemoryImport } from "./import";
 import type {
@@ -32,11 +31,6 @@ function rowToEntry(row: UserMemory): MemoryEntry {
     createdAt: row.createdAt.getTime(),
     updatedAt: row.updatedAt.getTime(),
   };
-}
-
-export interface UserContextPayload {
-  memory: MemoryByCategory;
-  profile: UserProfile;
 }
 
 const saveMemorySchema = z.object({

@@ -1,12 +1,6 @@
 import { listMemoryForUser } from "@/lib/memory/queries";
-import type { MemoryByCategory } from "@/lib/memory/types";
 import { getOrCreateProfileForUser } from "@/lib/profile/queries";
-import type { UserProfile } from "@/lib/profile/types";
-
-interface UserContextPayload {
-  memory: MemoryByCategory;
-  profile: UserProfile;
-}
+import type { UserContextPayload } from "./types";
 
 export async function getUserContext(
   userId: string

@@ -1,4 +1,4 @@
-import type { UserContextPayload } from "@/lib/memory/queries";
+import type { UserContextPayload } from "@/lib/user/types";
 
 export function buildUserContextPrompt(context: UserContextPayload) {
   const { profile, memory } = context;
