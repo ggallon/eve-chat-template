@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { CHAT_ROUTE_SYNC_EVENT } from "@/app/_components/agent-chat-events";
 import type { ActiveChat } from "@/lib/chat/types";
+import { CHAT_ROUTE_SYNC_EVENT } from "./agent-chat-events";
 
 export function AgentChatRouteSync({
   activeChat,

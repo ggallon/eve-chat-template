@@ -2,7 +2,6 @@
 
 import { HammerIcon } from "lucide-react";
 import type { ComponentType } from "react";
-import type { EnabledConnections } from "@/app/_components/chat-shell-context";
 import { LinearIcon, NotionIcon, SentryIcon } from "@/components/icons";
 import {
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { EnabledConnections } from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
 
 type ConnectionItem = {

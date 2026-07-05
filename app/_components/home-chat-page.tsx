@@ -2,12 +2,6 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  type AgentChatControllerStatus,
-  ComposerFooterControls,
-  ErrorToast,
-} from "@/app/_components/agent-chat";
-import { useChatShell } from "@/app/_components/chat-shell-context";
 import { ChatComposer } from "@/components/chat/composer";
 import { TemplateFooterLinks } from "@/components/chat/template-footer-links";
 import { getChatMessageLengthError } from "@/lib/chat/limits";
@@ -15,12 +9,10 @@ import {
   createProvisionalChatId,
   writePendingChatMessage,
 } from "@/lib/chat/provisional-chat";
-
-const IDLE_CONTROLLER_STATUS: AgentChatControllerStatus = {
-  isBusy: false,
-  isDisabled: false,
-  isEmpty: true,
-};
+import { useChatShell } from "./chat-shell-context";
+import { ComposerFooterControls } from "./composer-footer-controls";
+import { IDLE_CONTROLLER_STATUS } from "./controller";
+import { ErrorToast } from "./error-toast";
 
 export function HomeChatPage() {
   const { requestSignIn, setActiveChatId, viewer } = useChatShell();

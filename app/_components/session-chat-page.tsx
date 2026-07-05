@@ -8,18 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  type AgentChatController,
-  type AgentChatControllerStatus,
-  AgentChatSession,
-  ComposerFooterControls,
-  ErrorToast,
-} from "@/app/_components/agent-chat";
-import {
-  CHAT_ROUTE_SYNC_EVENT,
-  type ChatRouteSyncDetail,
-} from "@/app/_components/agent-chat-events";
-import { useChatShell } from "@/app/_components/chat-shell-context";
 import { createChatAction } from "@/app/actions/chat";
 import { ChatComposer } from "@/components/chat/composer";
 import {
@@ -29,12 +17,16 @@ import {
   writePendingChatMessage,
 } from "@/lib/chat/provisional-chat";
 import type { ActiveChat } from "@/lib/chat/types";
-
-const IDLE_CONTROLLER_STATUS: AgentChatControllerStatus = {
-  isBusy: false,
-  isDisabled: false,
-  isEmpty: true,
-};
+import { AgentChatSession } from "./agent-chat";
+import {
+  CHAT_ROUTE_SYNC_EVENT,
+  type ChatRouteSyncDetail,
+} from "./agent-chat-events";
+import { useChatShell } from "./chat-shell-context";
+import { ComposerFooterControls } from "./composer-footer-controls";
+import { IDLE_CONTROLLER_STATUS } from "./controller";
+import { ErrorToast } from "./error-toast";
+import type { AgentChatController, AgentChatControllerStatus } from "./types";
 
 export function SessionChatPage({
   chatId,

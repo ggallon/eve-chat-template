@@ -16,10 +16,6 @@ import {
   CHAT_BOOTSTRAP_SYNC_EVENT,
   type ChatBootstrapSyncDetail,
 } from "@/app/_components/agent-chat-events";
-import {
-  ChatShellProvider,
-  type EnabledConnections,
-} from "@/app/_components/chat-shell-context";
 import { deleteChatAction } from "@/app/actions/chat";
 import { AuthDisplayLoggedOut } from "@/components/auth/auth-display";
 import { SignInModal } from "@/components/auth/sign-in-modal";
@@ -36,8 +32,13 @@ import {
   SIDEBAR_COOKIE_NAME,
   serializeSidebarOpen,
 } from "@/lib/chat/sidebar-state";
-import type { ChatListItem, Viewer } from "@/lib/chat/types";
+import type {
+  ChatListItem,
+  EnabledConnections,
+  Viewer,
+} from "@/lib/chat/types";
 import { cn } from "@/lib/utils";
+import { ChatShellProvider } from "./chat-shell-context";
 
 export function AgentChatShell({
   children,
@@ -63,9 +64,9 @@ export function AgentChatShell({
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [enabledConnections, setEnabledConnections] =
     useState<EnabledConnections>({
-      linear: true,
-      notion: true,
-      sentry: true,
+      linear: false,
+      notion: false,
+      sentry: false,
     });
   const cursorRef = useRef(initialNextCursor);
   const activeChatIdRef = useRef(activeChatId);

@@ -1,13 +1,11 @@
 "use client";
 
 import { createContext, type ReactNode, useContext } from "react";
-import type { ChatListItem, Viewer } from "@/lib/chat/types";
-
-export type EnabledConnections = {
-  readonly linear: boolean;
-  readonly notion: boolean;
-  readonly sentry: boolean;
-};
+import type {
+  ChatListItem,
+  EnabledConnections,
+  Viewer,
+} from "@/lib/chat/types";
 
 type ChatShellContextValue = {
   readonly activeChatId: string | null;

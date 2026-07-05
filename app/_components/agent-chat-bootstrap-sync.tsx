@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { CHAT_BOOTSTRAP_SYNC_EVENT } from "@/app/_components/agent-chat-events";
 import type { ChatListItem, Viewer } from "@/lib/chat/types";
+import { CHAT_BOOTSTRAP_SYNC_EVENT } from "./agent-chat-events";
 
 export function AgentChatBootstrapSync({
   chats,

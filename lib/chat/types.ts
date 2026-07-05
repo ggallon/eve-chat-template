@@ -25,3 +25,9 @@ export type ActiveChat = {
   readonly session: SessionState | undefined;
   readonly title: string;
 };
+
+export type EnabledConnections = {
+  readonly linear: boolean;
+  readonly notion: boolean;
+  readonly sentry: boolean;
+};
