@@ -1,0 +1,12 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "files": [
+      ".codegraph/**",
+      ".eve/**",
+      ".next/**",
+      ".output/**",
+      "components/ui/**"
+    ]
+  }
+}
