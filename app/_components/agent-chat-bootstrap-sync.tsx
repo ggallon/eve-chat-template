@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import type { ChatListItem, Viewer } from "@/lib/chat/types";
-import { CHAT_BOOTSTRAP_SYNC_EVENT } from "./agent-chat-events";
+import {
+  CHAT_BOOTSTRAP_SYNC_EVENT,
+  type ChatBootstrapSyncDetail,
+} from "./agent-chat-events";
 
 export function AgentChatBootstrapSync({
   chats,
   nextCursor,
   viewer,
-}: {
-  readonly chats: readonly ChatListItem[];
-  readonly nextCursor: string | null;
-  readonly viewer: Viewer | null;
-}) {
+}: ChatBootstrapSyncDetail) {
   useEffect(() => {
     const detail = { chats, nextCursor, viewer };
     const target = window as Window & {

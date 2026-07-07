@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import type { ActiveChat } from "@/lib/chat/types";
-import { CHAT_ROUTE_SYNC_EVENT } from "./agent-chat-events";
+import {
+  CHAT_ROUTE_SYNC_EVENT,
+  type ChatRouteSyncDetail,
+} from "./agent-chat-events";
 
 export function AgentChatRouteSync({
   activeChat,
   chatId,
-}: {
-  readonly activeChat: ActiveChat | null;
-  readonly chatId: string | null;
-}) {
+}: ChatRouteSyncDetail) {
   useEffect(() => {
     const detail = { activeChat, chatId };
     const target = window as Window & {
