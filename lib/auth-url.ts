@@ -37,7 +37,5 @@ function normalizeAppUrl(value: string | undefined) {
     url.hash = "";
 
     return url.toString().replace(/\/$/, "");
-  } catch {
-    return;
-  }
+  } catch {}
 }

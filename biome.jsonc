@@ -16,6 +16,13 @@
       "!components/ui"
     ]
   },
+  "assist": {
+    "actions": {
+      "source": {
+        "useSortedKeys": "off"
+      }
+    }
+  },
   "linter": {
     "rules": {
       "a11y": {

@@ -148,6 +148,4 @@ function getHomeComposerDisabledReason({
   if (submitting) {
     return "Preparing chat.";
   }
-
-  return;
 }

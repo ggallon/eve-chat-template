@@ -30,8 +30,6 @@ function categoryFromHeader(header: string): MemoryCategory | undefined {
       return category;
     }
   }
-
-  return;
 }
 
 /*

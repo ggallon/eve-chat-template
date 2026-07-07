@@ -470,6 +470,4 @@ function getSessionComposerDisabledReason({
   if (controllerStatus.isBusy) {
     return "eve is responding.";
   }
-
-  return;
 }
