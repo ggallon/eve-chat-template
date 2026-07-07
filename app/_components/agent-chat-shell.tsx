@@ -26,6 +26,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { mergeChatHistory } from "@/lib/chat/message";
 import {
   parseSidebarOpen,
   SIDEBAR_COOKIE_MAX_AGE,
@@ -361,6 +362,8 @@ export function AgentChatShell({
               : "pointer-events-none opacity-0"
           )}
           onClick={() => setMobileSidebarOpen(false)}
+          role="button"
+          tabIndex={0}
         />
         {mobileSidebarOpen ? (
           <div className="fixed inset-y-0 left-0 z-50 md:hidden">
@@ -513,18 +516,4 @@ function AuthTopActions({ onSignIn }: { readonly onSignIn: () => void }) {
       </Button>
     </div>
   );
-}
-
-function mergeChatHistory(
-  incoming: readonly ChatListItem[],
-  current: readonly ChatListItem[]
-) {
-  const incomingById = new Map(incoming.map((item) => [item.id, item]));
-  const currentIds = new Set(current.map((item) => item.id));
-  const freshIncoming = incoming.filter((item) => !currentIds.has(item.id));
-
-  return [
-    ...freshIncoming,
-    ...current.map((item) => incomingById.get(item.id) ?? item),
-  ];
 }

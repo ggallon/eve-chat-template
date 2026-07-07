@@ -1,4 +1,5 @@
 import type { EveMessage, EveMessageData } from "eve/client";
+import type { ChatListItem } from "./types";
 
 export function createPendingUserMessage(
   chatId: string,
@@ -68,4 +69,18 @@ export function appendPendingUserMessages(
   }
 
   return nextMessages;
+}
+
+export function mergeChatHistory(
+  incoming: readonly ChatListItem[],
+  current: readonly ChatListItem[]
+) {
+  const incomingById = new Map(incoming.map((item) => [item.id, item]));
+  const currentIds = new Set(current.map((item) => item.id));
+  const freshIncoming = incoming.filter((item) => !currentIds.has(item.id));
+
+  return [
+    ...freshIncoming,
+    ...current.map((item) => incomingById.get(item.id) ?? item),
+  ];
 }
