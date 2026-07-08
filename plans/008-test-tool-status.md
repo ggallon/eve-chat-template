@@ -27,7 +27,27 @@
 - **Depends on**: 005 (adds the vitest runner and `vitest.config.ts`)
 - **Category**: tests
 - **Planned at**: commit `d1daea6`, 2026-06-27 (split from the original 005
-  on 2026-07-01)
+  on 2026-07-01); re-confirmed READY at `eac0dad` on 2026-07-08 — see
+  "Drift note (2026-07-08)" below.
+
+## Drift note (2026-07-08 reconciliation against `eac0dad`)
+
+`components/chat/message/tool-status.ts` changed (11 lines) between
+`971fd68` and `eac0dad`: `getToolStatus`'s switch was refactored from four
+explicit `"running"`-returning cases (`input-streaming`, `input-available`,
+`approval-requested`, `approval-responded`) to a `default: return "running"`
+(the four states are now commented out above the `default`, not deleted).
+**This is behavior-preserving** — every `EveDynamicToolPart.state` value
+still maps to the same `ToolStatus` as before; verified by reading both the
+old (`git show 971fd68:components/chat/message/tool-status.ts`) and new
+version. All other exported functions this plan targets
+(`getToolGroupStatus`, `toolStatusLabel`, `summarizeToolGroup`,
+`describeToolAction`, `resolveToolName`, `needsInputResponse`,
+`hasToolDetails`) are unchanged. The plan's Step 1 instruction to "confirm
+the full state enum by reading the source" already covers this refactor —
+no plan changes needed. Executable as-is. (Separately, this refactor is why
+`tool-status.ts` now carries 3 new `noUnnecessaryConditions` lint errors in
+plan 006's Bucket E — see plan 006's 2026-07-08 drift note.)
 
 ## Why this matters
 

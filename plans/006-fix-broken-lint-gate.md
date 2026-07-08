@@ -7,30 +7,46 @@
 > in `plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
-> **Drift check (run first)**:
-> `git diff --stat d1daea6..HEAD -- app/_components/session-chat-page.tsx app/_components/home-chat-page.tsx app/_components/agent-chat-shell.tsx app/api/auth/[...all]/route.ts app/layout.tsx components/auth/ agent/tools/get_weather.ts`
-> If any of these files changed since this plan was written, re-run the audit
-> step (Step 1) to get the current error list before proceeding; treat a
-> changed error list as a STOP condition requiring re-planning.
+> **Drift check (run first, updated 2026-07-08)**:
+> `pnpm check --max-diagnostics=300 2>&1 | tail -5`
+> The 2026-07-08 baseline (commit `eac0dad`) is **100 errors + 6 warnings + 6
+> infos across 32 files**. If your count differs by more than a couple of
+> diagnostics, re-run the full audit (Step 1) and reconcile against the
+> "Drift note (2026-07-08)" section below before proceeding — do NOT trust
+> the file list in the original 2026-06-27 drift-check command above this
+> note or any bucket map dated before 2026-07-08; the codebase structure they
+> describe (a monolithic `agent-chat.tsx`, no `lib/chat/*` module, no memory
+> feature) no longer exists.
 
 ## Status
 
 - **Priority**: P2
-- **Effort**: **L** (was M at planning; re-estimated 2026-07-01 — the real
-  error set is ~3× larger than the planning-time ~21 and spans 20 files, 11
-  of which the original plan never listed; `agent-chat.tsx` alone has 17)
+- **Effort**: **XL** (re-estimated 2026-07-08 — was L/60 errors at the
+  2026-07-03 reconcile, now **100 errors across 32 files** after the
+  `agent-chat.tsx` decomposition and the new memory feature; see "Drift note
+  (2026-07-08)" below, which supersedes all earlier bucket maps)
 - **Risk**: MED (Bucket C is real and touches the untested
-  resume-after-refresh path; everything else is mechanical or review-only)
-- **Depends on**: **005 (RESTORED 2026-07-01)** — the test runner is the
-  safety net for Bucket C's manual hook-dep rewrites on
-  `session-chat-page.tsx`'s resume effect. 005 is DONE. (The 2026-06-28
-  reconcile removed this dependency on the incorrect claim that Bucket C was
-  empty — see the drift note below; that claim was wrong.)
+  resume-after-refresh / chat-switch path; everything else is mechanical or
+  review-only)
+- **Depends on**: **005** — the test runner is the safety net for Bucket C's
+  manual hook-dep rewrites. 005 is DONE.
 - **Category**: dx
-- **Planned at**: commit `d1daea6`, 2026-06-27; **re-drifted at
-  re-reconciliation against `ba0cd3a` on 2026-07-01** — see "Drift note
-  (2026-07-01)" below before executing. The earlier "Drift note (2026-06-28)"
-  is superseded and removed; its claims were incorrect.
+- **Planned at**: commit `d1daea6`, 2026-06-27; re-drifted against `ba0cd3a`
+  (2026-07-01), re-confirmed unchanged against `971fd68` (2026-07-03), then
+  **substantially re-drifted against `eac0dad` (2026-07-08)** — 18 commits
+  landed between `971fd68` and `eac0dad` including a full decomposition of
+  `app/_components/agent-chat.tsx` (2192→1175 lines, split into
+  `agent-chat-shell.tsx`, `agent-chat-bootstrap-sync.tsx`,
+  `agent-chat-route-sync.tsx`, `chat-shell-context.tsx`, `controller.ts`,
+  `error-toast.tsx`, `composer-footer-controls.tsx`, `types.ts`), a new
+  `lib/chat/*` module split (`connection.ts`, `error.ts`, `json-utils.ts`,
+  `message.ts`, `session.ts`, `stream.ts` — all new files, none of which
+  existed when this plan or its predecessors were written), and a new memory
+  feature (`lib/memory/*`, `agent/tools/save_memory.ts`,
+  `lib/db/schema/*` split from a single `lib/db/schema.ts`). **Read the
+  2026-07-08 drift note below before executing; it is the only reliable
+  bucket map — the 2026-07-01/07-03 notes and their line numbers describe a
+  codebase structure that no longer exists.**
 
 ## Drift note (2026-07-01 re-reconciliation against `ba0cd3a`)
 
@@ -219,9 +235,356 @@ agent/tools/get_weather.ts  (1)
   `pnpm test:run components/chat/message/tool-status.test.ts` after each
   change to that file.
 
-The plan body below is left UNEDITED (it records the planning-time state);
-override per the bucket map and file list above; trust Step 1's `pnpm check`
-output as the source of truth.
+**Everything above this line (the 2026-07-01/07-03 bucket map, "Current
+state" list, and file scope list further down) describes a codebase
+structure that no longer exists as of `eac0dad` — `agent-chat.tsx` was cut
+from 2192 to 1175 lines and split into 8 new sibling files, and several
+brand-new modules (`lib/chat/{connection,error,json-utils,message,session,
+stream}.ts`, `lib/memory/*`, `lib/db/schema/*`) were added. Do NOT use the
+line numbers or file list above. The section immediately below (2026-07-08)
+is the only authoritative bucket map. It is kept in the plan as historical
+context only, per the reconcile skill's "don't delete plan history" rule.**
+
+## Drift note (2026-07-08 reconciliation against `eac0dad`) — SUPERSEDES ALL EARLIER BUCKET MAPS
+
+Re-ran `pnpm check --max-diagnostics=300` on `eac0dad`: **100 errors + 6
+warnings + 6 infos across 32 files** (112 diagnostics total, up from 60/3/7
+across 18 files at `971fd68`). This is a real drift, not a measurement
+artifact — 18 commits landed since the last reconcile, including "Refactor
+the agent-chat.tsx file into several files" and "Add memory tool feature".
+Confirmed via `git diff --stat 971fd68..eac0dad -- app/ components/ lib/
+agent/`: 98 files changed, +7628/−3281 lines.
+
+**Authoritative error set at `eac0dad`, by file then line.** `E` = error
+(blocks `pnpm check`), `W` = warning, `i` = info (does NOT block the exit
+code — informational only, same as the historical
+`noExcessiveCognitiveComplexity` items). `FIX` = biome unsafe-fix available
+(do NOT trust it blindly on `useExhaustiveDependencies`, per Step 2/5 below).
+
+```
+app/_components/agent-chat.tsx  (21)
+  :85     noExcessiveCognitiveComplexity            i
+  :155    noEmptyBlockStatements                    E
+  :192    noShadow                                  E
+  :289    noShadow                                  E
+  :315    noShadow                                  E
+  :396    noNestedTernary                            E
+  :471    useExhaustiveDependencies          FIX     E  (missing dep: localPendingUserMessageRef.current, in sendMessage's useCallback)
+  :472    noExcessiveCognitiveComplexity            i
+  :531    noShadow                                  E
+  :540    noShadow                                  E
+  :649    noShadow                                  E
+  :751    useExhaustiveDependencies                 E  ×6 sub-diagnostics — the chat-switch/resume effect (successor to the historical
+                                                         Bucket C effect that lived at :1349 before the refactor). Diagnostics:
+                                                         "more specific than captures: activeChat?.title", "more specific than
+                                                         captures: activeChat?.events.length", "missing dep: activeChat?.events" (FIX),
+                                                         "missing dep: activeChat.events" (FIX), "more specific than captures:
+                                                         activeChat?.events.length" (dup w/ different capture site), "missing dep:
+                                                         activeChat" (FIX). Effect body starts `const nextChatId = activeChat?.id ??
+                                                         chatId ?? null;` — reads activeChat.title/events in multiple branches, dep
+                                                         array only lists activeChat?.events.length/id/title + 4 others.
+  :826    noExcessiveCognitiveComplexity            i
+  :931    useExhaustiveDependencies          FIX     E  (extra dep: displayError)
+  :982    noJsxPropsBind                             E
+  :1074   noJsxPropsBind                             E
+
+app/_components/agent-chat-shell.tsx  (14)  [NEW FILE — did not exist at 971fd68]
+  :102    noDocumentCookie                           E  (document.cookie = ... for sidebar-open persistence)
+  :290    noJsxPropsBind                             E
+  :291    noJsxPropsBind                             E
+  :297    noJsxPropsBind                             E
+  :300    noJsxPropsBind                             E
+  :307    noLeakedRender                              E
+  :331    noJsxPropsBind                             E
+  :342    noJsxPropsBind                             E
+  :357    useKeyWithClickEvents                       W
+  :364    noJsxPropsBind                             E
+  :365    useSemanticElements                         E  (role="button" on a div — suggests <button>)
+  :381    noJsxPropsBind                             E
+  :389    noJsxPropsBind                             E
+  :408    noDangerouslySetInnerHtml                   W  [BUCKET D] — <script> reading document.cookie via a regex built from a
+                                                          static template literal (SIDEBAR_COOKIE_NAME is a module const, no user
+                                                          input interpolated) to set a dataset attribute before hydration.
+
+app/_components/session-chat-page.tsx  (6)   [BUCKET C — resume/chat-switch effect, successor to the file audited at d1daea6/ba0cd3a]
+  :65     useExhaustiveDependencies          FIX     E  (extra dep: chatId)
+  :131    noEmptyBlockStatements                    E  (catch {})
+  :197    noExcessiveCognitiveComplexity            i  (the resume-driving async IIFE, successor to the old :205)
+  :269    useExhaustiveDependencies          FIX     E  (extra dep: chatId; dep array also lists controllerReady,
+                                                          controllerStatus.isBusy, controllerStatus.isDisabled, isLoadingChat,
+                                                          pendingUserMessage)
+  :308    useExhaustiveDependencies          FIX     E  (extra dep: clientError)
+  :397    noJsxPropsBind                             E  (onDismiss={() => setDismissedError(toastError)})
+
+app/_components/home-chat-page.tsx  (5)
+  :53     useExhaustiveDependencies          FIX     E  (extra dep: clientError)
+  :57     useExhaustiveDependencies          FIX     E  (extra dep: submitting)
+  :116    noJsxPropsBind                             E
+  :130    noEmptyBlockStatements                    E  (onStop={() => {}})
+  :130    noJsxPropsBind                             E  (same line, second diagnostic)
+
+app/api/auth/[...all]/route.ts  (3)
+  :16     useAwait                                   E  (GET)
+  :20     useAwait                                   E  (POST)
+  :30     noUnusedVariables                  FIX     E  (redirectToAuthError — re-verify still dead before deleting)
+
+app/layout.tsx  (1)                              [BUCKET D]
+  :102    noDangerouslySetInnerHtml                   W  (theme-init script, static)
+
+components/auth/auth-display.tsx  (1)            [BUCKET D]
+  :36     noDangerouslySetInnerHtml                   W  (auth-display-init script, static)
+
+components/auth/sign-in-button.tsx  (2)
+  :33     noJsxPropsBind                             E
+  :65     useOptionalChain                   FIX     E
+
+components/auth/user-menu.tsx  (2)
+  :99     noImgElement                                W
+  :99     useImageSize                                E  (same <img>, moved from :92 to :99 — same finding as before)
+
+components/chat/composer.tsx  (4)
+  :123    noJsxPropsBind                             E
+  :145    noNestedTernary                            E
+  :181    useAriaPropsSupportedByRole                E
+  :181    noNoninteractiveTabindex           FIX     E
+
+components/chat/integrations-menu.tsx  (1)
+  :65     noJsxPropsBind                             E
+
+components/chat/markdown.tsx  (1)
+  :139    noShadow                                   E  (Markdown function shadows const Markdown)
+
+components/chat/message/index.tsx  (2)
+  :125    noUnusedFunctionParameters                 E  (canRespond)
+  :127    noUnusedFunctionParameters                 E  (onInputResponses)
+
+components/chat/message/tool-group.tsx  (2)
+  :49     noNonNullAssertion                         E
+  :90     noNonNullAssertion                         E
+
+components/chat/message/tool-parts.tsx  (4)
+  :133    noJsxPropsBind                             E
+  :154    noJsxPropsBind                             E
+  :155    noJsxPropsBind                             E
+  :166    noJsxPropsBind                             E
+
+components/chat/message/tool-status.ts  (11)  [plan 008's target module — same caveat as before applies]
+  :47     noUnnecessaryConditions                    E  (case "output-available" in getToolStatus's switch)
+  :49     noUnnecessaryConditions                    E  (case "output-denied")
+  :51     noUnnecessaryConditions                    E  (case "output-error")
+  :90     useDefaultSwitchClause                     E
+  :107    noNonNullAssertion                         E
+  :154    noExcessiveCognitiveComplexity             i
+  :240    useTopLevelRegex                           E
+  :251    useTopLevelRegex                           E
+  :252    useTopLevelRegex                           E
+  :256    useTopLevelRegex                           E
+  :270    useTopLevelRegex                           E
+  NOTE: getToolStatus's switch was refactored between 971fd68 and eac0dad —
+  the explicit "input-streaming"/"input-available"/"approval-requested"/
+  "approval-responded" cases were commented out and replaced with a
+  `default: return "running"` (source at lines 45-60; the 4 states are still
+  commented above the default, not deleted). Functionally equivalent for
+  every EveDynamicToolPart.state value, which is presumably why biome now
+  calls the 3 remaining explicit cases (output-available/denied/error)
+  "unreachable" — verify this at Step 1 by reading the current function
+  before fixing; if the switch's behavior actually changed (not just its
+  shape), STOP and report instead of "fixing" a real bug as a lint error.
+
+components/chat/message/use-streaming-text.ts  (1)
+  :24     useDestructuring                            E
+
+components/chat/sidebar.tsx  (7)
+  :98     noJsxPropsBind                             E
+  :124    noJsxPropsBind                             E
+  :151    noJsxPropsBind                             E
+  :175    noJsxPropsBind                             E
+  :199    noJsxPropsBind                             E
+  :212    noNestedTernary                            E
+  :242    noJsxPropsBind                             E
+
+drizzle.config.ts  (1)
+  :8      noNonNullAssertion                         E
+
+lib/auth-url.ts  (3)
+  :29     useTopLevelRegex                           E
+  :39     useTopLevelRegex                           E
+  :40     noEmptyBlockStatements                     E  (catch {})
+
+lib/chat/connection.ts  (1)  [NEW FILE]
+  :83     noUnnecessaryConditions                    E  (challenge?.instructions ?? event.data.description ?? ... — biome says the
+                                                          right-hand fallback after `??` is unreachable; read before "fixing", the
+                                                          nullish-chain intent may be real defense-in-depth)
+
+lib/chat/error.ts  (1)  [NEW FILE]
+  :13     noEmptyBlockStatements                     E  (catch {})
+
+lib/chat/events.ts  (1)
+  :32     noNonNullAssertion                         E
+
+lib/chat/json-utils.ts  (3)  [NEW FILE]
+  :22     noUnnecessaryConditions                    E  (while (true))
+  :23     noAwaitInLoops                              E  (NDJSON stream reader loop — legitimate sequential read, likely a
+                                                          biome-ignore candidate rather than a rewrite)
+  :59     noEmptyBlockStatements                     E  (reader.cancel().catch(() => {}) — has an explanatory comment above it
+                                                          already; likely a biome-ignore candidate)
+
+lib/chat/session.ts  (1)  [NEW FILE]
+  :263    useDestructuring                            E
+
+lib/chat/stream.ts  (5)  [NEW FILE]
+  :30     useTopLevelRegex                           E
+  :54     noAwaitInLoops                              E  (retry-loop fetch — likely a biome-ignore candidate, same reasoning as
+                                                          json-utils.ts:23)
+  :66     useDestructuring                            E
+  :117    noExcessiveCognitiveComplexity              i
+  :139    noAwaitInLoops                              E  (same retry-loop pattern)
+
+lib/db/queries.ts  (1)
+  :70     useAtIndex                          FIX     E
+
+lib/db/relations.ts  (1)  [NEW FILE — see Bucket F note below]
+  :2      noNamespaceImport                          W  (import * as schema from "./schema")
+
+lib/db/schema.ts  (1)  [NEW FILE — barrel, see Bucket F note below]
+  :1      noBarrelFile                                E
+
+lib/memory/queries.ts  (2)  [NEW FILE]
+  :36     noUnusedVariables                  FIX     E  (saveMemorySchema — verify dead before deleting; it may be intended for a
+                                                          future validation call)
+  :182    noAwaitInLoops                              E  (sequential per-category save loop — likely intentional serialization)
+
+agent/tools/get_weather.ts  (1)
+  :9      useAwait                                    E
+
+agent/tools/save_memory.ts  (1)  [NEW FILE]
+  :64     noAwaitInLoops                              E  (calls saveMemory per update in a for-loop — same pattern as
+                                                          lib/memory/queries.ts:182)
+```
+
+**Revised bucket map for execution (2026-07-08, supersedes every earlier bucket map in this file):**
+
+- **Bucket A — mechanical & safe (auto-fixable or trivial, no behavior risk):**
+  `app/api/auth/[...all]/route.ts:16,20` (`useAwait`×2), `:30`
+  (`noUnusedVariables` — re-confirm `redirectToAuthError` is still dead),
+  `components/auth/sign-in-button.tsx:65` (`useOptionalChain`),
+  `agent/tools/get_weather.ts:9` (`useAwait`),
+  `lib/db/queries.ts:70` (`useAtIndex` → `.at(-1)`),
+  `lib/memory/queries.ts:36` (`noUnusedVariables` — re-confirm dead first),
+  `components/chat/composer.tsx:181` (`noNoninteractiveTabindex`, FIXABLE),
+  `home-chat-page.tsx:130` + `session-chat-page.tsx:131` + `agent-chat.tsx:155`
+  + `lib/auth-url.ts:40` + `lib/chat/error.ts:13` (`noEmptyBlockStatements`×5
+  — read each `catch {}`/empty block; most are swallowed-error patterns, see
+  Step 3's guidance, now applied to 2 new `lib/chat/` files too).
+- **Bucket B — `<img>` in `components/auth/user-menu.tsx:99`**
+  (`noImgElement` warn + `useImageSize` error, same finding as before, new
+  line number). See Step 4.
+- **Bucket C — resume/chat-switch effect hook deps + cognitive complexity
+  (HIGHEST RISK, manual judgement, 005 safety net required):**
+  `app/_components/agent-chat.tsx:471,751(×6 sub-diagnostics),931` +
+  `session-chat-page.tsx:65,269,308` + `home-chat-page.tsx:53,57`
+  (`useExhaustiveDependencies`, 12 diagnostics across 3 files — this is the
+  direct successor to every earlier "Bucket C"; `agent-chat.tsx:751`'s effect
+  is the same chat-switch/resume logic that lived at `:1349` in the
+  pre-refactor file). The `noExcessiveCognitiveComplexity` infos
+  (`agent-chat.tsx:85,472,826`, `session-chat-page.tsx:197`,
+  `lib/chat/stream.ts:117`, `tool-status.ts:154`) are INFO level and do NOT
+  fail `pnpm check` — leave them, same rule as before. See Step 5.
+- **Bucket D — `noDangerouslySetInnerHtml` (REVIEW-REQUIRED, do NOT
+  auto-fix):** `app/layout.tsx:102`, `components/auth/auth-display.tsx:36`
+  (both same as before), PLUS the new
+  `app/_components/agent-chat-shell.tsx:408` (a `<script>` that reads
+  `document.cookie` via a regex built from the static `SIDEBAR_COOKIE_NAME`
+  const — no runtime/user data is interpolated into the injected HTML
+  itself, only into a client-side regex; read it yourself and confirm before
+  ignoring). See Step 6.
+- **Bucket E — a11y / style / perf, mechanical, low-risk (the bulk of the
+  count):** everything else in the table above — `noJsxPropsBind` (the
+  largest single rule by count: `agent-chat.tsx`×2, `agent-chat-shell.tsx`×9,
+  `home-chat-page.tsx`×2, `session-chat-page.tsx`×1, `sign-in-button.tsx`×1,
+  `user-menu.tsx`×1, `composer.tsx`×1, `integrations-menu.tsx`×1,
+  `tool-parts.tsx`×4, `sidebar.tsx`×6 — wrap each in `useCallback` or hoist
+  to a stable reference, following the pattern already used elsewhere in the
+  same file for callbacks that ARE memoized), `noShadow`×7
+  (`agent-chat.tsx`×6, `markdown.tsx`×1 — rename the inner binding),
+  `noNestedTernary`×3 (`agent-chat.tsx:396`, `composer.tsx:145`,
+  `sidebar.tsx:212` — convert to if/else or a lookup), `useDefaultSwitchClause`
+  (`tool-status.ts:90`), `noNonNullAssertion`×5 (`tool-group.tsx`×2,
+  `tool-status.ts:107`, `events.ts:32`, `drizzle.config.ts:8`),
+  `useTopLevelRegex`×8 (`tool-status.ts`×5, `auth-url.ts`×2, `stream.ts:30`
+  — hoist to module-scope consts), `useDestructuring`×3
+  (`use-streaming-text.ts:24`, `session.ts:263`, `stream.ts:66`),
+  `noUnusedFunctionParameters`×2 (`message/index.tsx:125,127` — read before
+  removing, may be forwarded props), `useSemanticElements` +
+  `useKeyWithClickEvents` + `noLeakedRender` + `noDocumentCookie`
+  (`agent-chat-shell.tsx` — a11y/cookie cluster, read each before fixing;
+  `noDocumentCookie` in particular is used for sidebar-state persistence and
+  the "fix" (Cookie Store API) is not universally supported, so a
+  `biome-ignore` with reason may be more appropriate than a rewrite — use
+  judgement, this is not a security issue).
+- **Bucket F — NEW judgement-call cluster: `lib/db/schema.ts` barrel +
+  `lib/db/relations.ts` namespace import.** These two diagnostics are
+  linked: `lib/db/schema.ts` (`noBarrelFile`) re-exports 4 sub-modules
+  (`schema/auth.ts`, `schema/chat.ts`, `schema/memory.ts`,
+  `schema/profile.ts`); grep confirms it has exactly ONE consumer,
+  `lib/db/relations.ts:2` (`import * as schema from "./schema"`), because
+  every other call site already imports directly from the sub-modules
+  (`@/lib/db/schema/auth`, `@/lib/db/schema/memory`, etc. — verify this with
+  `rg "from \"@/lib/db/schema\"" --include='*.ts' --include='*.tsx'` before
+  touching anything; it should return zero matches outside
+  `lib/db/relations.ts` and `lib/db/schema.ts` itself). `defineRelations()`
+  needs one merged object of every table across all 4 sub-modules, so simply
+  swapping to named imports means importing every individual table export
+  (not just a namespace) and either spreading them into one object or
+  passing named imports directly — read `lib/db/relations.ts` first to see
+  exactly which table names it references (`user`, `session`, `account`,
+  `chat`, `userMemory`, `userProfiles`). Two acceptable outcomes: (a) rewrite
+  `relations.ts` to import the specific tables by name from each
+  `schema/*.ts` file and pass an object literal to `defineRelations`, then
+  delete `lib/db/schema.ts` entirely (it becomes unused) — the more thorough
+  fix; or (b) leave both as-is and add matched `biome-ignore` comments on
+  both lines explaining `defineRelations` needs the full merged schema
+  object. Prefer (a) if it's a clean 10-minute rewrite; fall back to (b) and
+  report the tradeoff if the table list is large or relations.ts's typing
+  gets fragile with named imports. Do NOT touch `schema/auth.ts`,
+  `schema/chat.ts`, `schema/memory.ts`, or `schema/profile.ts` themselves —
+  only `relations.ts` and, if outcome (a), the deletion of `schema.ts`.
+- **`lib/chat/json-utils.ts:23`, `lib/chat/stream.ts:54,139`,
+  `lib/memory/queries.ts:182`, `agent/tools/save_memory.ts:64`
+  (`noAwaitInLoops`×5, all NEW code):** read each before deciding. Three of
+  these (`json-utils.ts:23`'s NDJSON reader loop, `stream.ts:54,139`'s retry
+  loop) are structurally sequential by necessity (you cannot parallelize
+  "read the next chunk of a single stream" or "retry the same request N
+  times") — a `biome-ignore lint/performance/noAwaitInLoops: sequential by
+  design` is the right call for those three, not a `Promise.all` rewrite
+  (which would change behavior). `lib/memory/queries.ts:182` and
+  `agent/tools/save_memory.ts:64` save one category/update at a time in a
+  loop — check whether concurrent saves would race (same user, same
+  category?) before deciding between `biome-ignore` and `Promise.all`; if
+  they can safely run concurrently, `Promise.all` is a real, small
+  perf win; if not (e.g. they write to the same row and ordering matters),
+  `biome-ignore` with a reason is correct. Do not guess — read both
+  functions' bodies.
+- **`lib/chat/connection.ts:83`, `lib/chat/json-utils.ts:22`
+  (`noUnnecessaryConditions`×2, NEW code):** read each — `connection.ts:83`'s
+  nullish-chain (`challenge?.instructions ?? event.data.description ?? ...`)
+  and `json-utils.ts:22`'s `while (true)` both look like biome
+  over-narrowing on runtime data whose type is wider than what TS inferred
+  at that point (e.g. `event.data.description` may be typed as always
+  non-nullish now but was written defensively against a runtime shape TS
+  doesn't fully capture). Do NOT delete the fallback/condition without
+  understanding why it was added — if removing it is correct, fine; if you're
+  not sure it's dead, STOP and report rather than deleting defensive code.
+- **`tool-status.ts` has 11 diagnostics but is plan 008's target module** —
+  same caveat as the original note above: if 008 has landed, its tests are
+  the safety net; if not, be careful not to change exported signatures.
+
+The plan body below (Steps 1-7) is left UNEDITED from planning time; its
+PROCESS is still sound (re-audit first, bucket by risk, resume-effect
+manual-only, no global `pnpm fix`) but every specific file list, line
+number, and bucket membership it cites is STALE. Use the 2026-07-08 bucket
+map above as the source of truth for what to fix and where; use the Steps
+below only for HOW to fix each bucket category and what to verify.
 
 
 
@@ -311,11 +674,26 @@ Files in scope (do NOT touch any other file):
 
 ## Scope
 
-**In scope**: the ~9 files listed in "Current state" above. Re-confirm the
-exact set at Step 1 — only touch files that Step 1 shows have errors.
+**In scope (per the 2026-07-08 drift note, NOT the ~9-file 2026-06-27
+list above)**: the 32 files listed in the "Drift note (2026-07-08)"
+authoritative error table — `app/_components/agent-chat.tsx`,
+`app/_components/agent-chat-shell.tsx`, `app/_components/session-chat-page.tsx`,
+`app/_components/home-chat-page.tsx`, `app/api/auth/[...all]/route.ts`,
+`app/layout.tsx`, `components/auth/{auth-display,sign-in-button,user-menu}.tsx`,
+`components/chat/{composer,integrations-menu,markdown,sidebar}.tsx`,
+`components/chat/message/{index,tool-group,tool-parts,tool-status,use-streaming-text}.{ts,tsx}`,
+`drizzle.config.ts`, `lib/auth-url.ts`,
+`lib/chat/{connection,error,events,json-utils,session,stream}.ts`,
+`lib/db/{queries,relations,schema}.ts`, `lib/memory/queries.ts`,
+`agent/tools/{get_weather,save_memory}.ts`. Re-confirm the exact set at
+Step 1 — only touch files that Step 1 shows have errors.
 
 **Out of scope** (do NOT touch):
 - `components/ui/**`, `lib/db/migrations/**` (biome-excluded).
+- `lib/db/schema/{auth,chat,memory,profile}.ts` — the individual schema
+  sub-modules. Bucket F only permits touching `lib/db/relations.ts` and,
+  optionally, deleting the barrel `lib/db/schema.ts`; the sub-modules
+  themselves are not in scope.
 - `biome.jsonc` rule severity changes — do NOT weaken rules to clear errors.
   The only config change allowed is Step 6 (documenting the gate in
   `AGENTS.md` is out of this plan's scope; tracked elsewhere).
@@ -323,8 +701,9 @@ exact set at Step 1 — only touch files that Step 1 shows have errors.
   file you edit happens to have OTHER lint issues revealed after the first
   fix, fix only the originally-listed errors plus any that the SAME fix
   surfaces in the same file.
-- Do NOT add `biome-ignore` comments except where Step 5 explicitly permits
-  (the `dangerouslySetInnerHtml` review path).
+- Do NOT add `biome-ignore` comments except where Step 5/6 or the Bucket
+  E/F/`noAwaitInLoops` guidance above explicitly permits it, and always with
+  a one-line reason.
 - Do NOT run `pnpm fix` on the whole repo — it would auto-apply unsafe
   hook-dep rewrites. See Step 2.
 
@@ -521,21 +900,25 @@ Machine-checkable. ALL must hold:
 - [ ] `pnpm check` exits 0
 - [ ] `pnpm typecheck` exits 0
 - [ ] `pnpm test:run` exits 0
-- [ ] `git status` shows only the in-scope files modified (the ~9 listed in
-      "Current state", plus this `plans/` update) — no out-of-scope file was
-      touched (especially NOT `biome.jsonc`, `components/ui/**`,
-      `lib/db/migrations/**`)
-- [ ] No `biome-ignore` comments added except in `app/layout.tsx` and/or
-      `components/auth/auth-display.tsx` (Bucket D), each with a reason line
+- [ ] `git status` shows only the in-scope files modified (the 32 files
+      listed in the "Drift note (2026-07-08)" / Scope section, plus this
+      `plans/` update) — no out-of-scope file was touched (especially NOT
+      `biome.jsonc`, `components/ui/**`, `lib/db/migrations/**`,
+      `lib/db/schema/{auth,chat,memory,profile}.ts`)
+- [ ] No `biome-ignore` comments added except where Bucket D, F, or the
+      `noAwaitInLoops`/`noUnnecessaryConditions` guidance in the 2026-07-08
+      drift note explicitly permits, each with a reason line
 - [ ] `plans/README.md` status row for plan 006 updated to DONE
 
 ## STOP conditions
 
 Stop and report back (do not improvise) if:
 
-- The drift check shows any in-scope file changed since `d1daea6` — re-run
-  Step 1; if the error set is substantially different (different files,
-  different rules, much higher/lower count), the plan needs re-planning.
+- The drift check (`pnpm check --max-diagnostics=300`) shows a diagnostic
+  count that differs substantially from the 2026-07-08 baseline (100 errors
+  / 6 warnings / 6 infos / 32 files) — re-run Step 1 and reconcile against
+  the drift note; if the set is substantially different again, the plan
+  needs re-planning rather than blind execution.
 - Plan 005 (`add-test-runner`) is not DONE — do NOT proceed to Bucket C
   (Step 5). You may do Buckets A, B, D first, but Bucket C requires the test
   safety net as a dependency. If 005 is BLOCKED, report and either wait or
@@ -558,11 +941,13 @@ Stop and report back (do not improvise) if:
 
 ## Maintenance notes
 
-- **For the reviewer**: the highest-scrutiny diff is Bucket C
-  (`session-chat-page.tsx` resume effect). Read the before/after of that
-  effect line by line — the set of conditions that fire resume, and the
-  dependency array, must be intentional. Buckets A/B/D are low-risk and
-  mechanical.
+- **For the reviewer**: the highest-scrutiny diffs are Bucket C
+  (`session-chat-page.tsx`'s resume effect AND `agent-chat.tsx:751`'s
+  chat-switch/title/known-events effect — both drive what the UI shows
+  across a chat-ID or refresh transition) and Bucket F (`lib/db/relations.ts`
+  / `lib/db/schema.ts`, only if outcome (a) was chosen — deleting a schema
+  barrel touches how every table relation is wired). Read the before/after
+  of each line by line. Buckets A/B/D/E are low-risk and mechanical.
 - **CI gate follow-up**: once `pnpm check` exits 0, the natural next step is
   adding it to a pre-commit hook and/or CI. That is out of this plan's scope
   (no CI config exists in the repo to edit) but is the immediate value of
