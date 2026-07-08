@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createChatAction } from "@/app/actions/chat";
 import { ChatComposer } from "@/components/chat/composer";
+import { writeChatDraft } from "@/lib/chat/draft-storage";
 import {
   clearPendingChatMessage,
   isProvisionalChatId,
@@ -27,6 +28,7 @@ import { ComposerFooterControls } from "./composer-footer-controls";
 import { IDLE_CONTROLLER_STATUS } from "./controller";
 import { ErrorToast } from "./error-toast";
 import type { AgentChatController, AgentChatControllerStatus } from "./types";
+import { useRestoredDraft } from "./use-restored-draft";
 
 export function SessionChatPage({
   chatId,
@@ -126,9 +128,7 @@ export function SessionChatPage({
         clearPendingChatMessage(chatId);
         setPendingUserMessage(null);
 
-        try {
-          window.sessionStorage.setItem("eve-chat-draft", pendingMessage);
-        } catch {}
+        writeChatDraft(pendingMessage);
 
         setClientError(
           error instanceof Error ? error.message : "Failed to start chat."
@@ -253,18 +253,7 @@ export function SessionChatPage({
     };
   }, [chatId, isProvisionalChat, viewer]);
 
-  useEffect(() => {
-    if (!viewer) {
-      return;
-    }
-
-    const restoredDraft = window.sessionStorage.getItem("eve-chat-draft");
-
-    if (restoredDraft) {
-      setDraft(restoredDraft);
-      window.sessionStorage.removeItem("eve-chat-draft");
-    }
-  }, [viewer]);
+  useRestoredDraft(viewer, setDraft);
 
   useEffect(() => {
     if (

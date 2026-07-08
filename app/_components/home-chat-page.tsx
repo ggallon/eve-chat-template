@@ -13,6 +13,7 @@ import { useChatShell } from "./chat-shell-context";
 import { ComposerFooterControls } from "./composer-footer-controls";
 import { IDLE_CONTROLLER_STATUS } from "./controller";
 import { ErrorToast } from "./error-toast";
+import { useRestoredDraft } from "./use-restored-draft";
 
 export function HomeChatPage() {
   const { requestSignIn, setActiveChatId, viewer } = useChatShell();
@@ -37,18 +38,7 @@ export function HomeChatPage() {
     }
   }, [pathname]);
 
-  useEffect(() => {
-    if (!viewer) {
-      return;
-    }
-
-    const restoredDraft = window.sessionStorage.getItem("eve-chat-draft");
-
-    if (restoredDraft) {
-      setDraft(restoredDraft);
-      window.sessionStorage.removeItem("eve-chat-draft");
-    }
-  }, [viewer]);
+  useRestoredDraft(viewer, setDraft);
 
   useEffect(() => {
     setDismissedError(null);

@@ -26,6 +26,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { writeChatDraft } from "@/lib/chat/draft-storage";
 import { mergeChatHistory } from "@/lib/chat/message";
 import {
   parseSidebarOpen,
@@ -388,10 +389,7 @@ export function AgentChatShell({
           callbackPath={signInCallbackPath}
           onBeforeSignIn={() => {
             if (draftBeforeSignIn) {
-              window.sessionStorage.setItem(
-                "eve-chat-draft",
-                draftBeforeSignIn
-              );
+              writeChatDraft(draftBeforeSignIn);
             }
           }}
           onOpenChange={setAuthDialogOpen}
