@@ -26,6 +26,7 @@ your row when done.
 | 007  | Characterization tests for `lib/chat/*` pure helpers (events, title, limits) | P1 | M | 005 | **DONE — 1 test still fails on `canary` (regression, unfixed)** (landed on `canary` as `4868aea`; 34/35 tests pass; `limits.test.ts:49` still fails at `eac0dad` with the same locale mismatch — plan 009 fixes it and has not been executed yet) |
 | 008  | Characterization tests for `components/chat/message/tool-status.ts` | P1 | M | 005 | **READY** (dep 005 DONE; drift check at 2026-07-08 found `tool-status.ts` changed 11 lines since `971fd68` — `getToolStatus`'s switch was refactored to a `default` case, but the behavior for every state is unchanged; plan 008 has a new drift note confirming this and remains executable as-is) |
 | 009  | Fix locale-fragile `limits.test.ts` assertion (007 regression) | P1 | S | 007 | **READY, no drift** (re-confirmed 2026-07-08: `lib/chat/limits.ts` and `lib/chat/limits.test.ts` are byte-identical to `971fd68`; `pnpm test:run` still exits 1 with the exact same failure; one-line source fix + one-line test fix; see plan 009) |
+| 010  | Extract the duplicated "restore draft from sessionStorage" effect into a shared `useRestoredDraft` hook | P3 | S | — | READY (reviewed/tightened 2026-07-08 against `7a51867`; not yet executed) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
 
@@ -74,6 +75,23 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
   `"en-US"` in the source and updates the test. 009 should execute BEFORE
   006 — a red `pnpm test:run` gate would block 006's test-dependent buckets.
   009 is independent of 008 (different files).
+- **010 is independent** — no dependency on any other plan, and no other
+  plan depends on it. It touches `home-chat-page.tsx`, `session-chat-page.tsx`,
+  and `agent-chat-shell.tsx`, all of which plan 006 also touches for
+  unrelated lint findings; **whichever of 006/010 executes second should
+  expect the other's line-number shifts** in those three files (010's own
+  "Maintenance notes" section flags this from 010's side). No ordering
+  requirement — they can run in either order or in parallel on separate
+  branches, just re-diff before assuming a stale line number in the other
+  plan is still accurate.
+- **010 was added via a targeted `plan <description>` request (2026-07-08,
+  against `437f112`) and reviewed/tightened the same day against `7a51867`,
+  not a full `/improve` audit or a `reconcile` pass.**
+  One commit landed since the last reconcile (`eac0dad` → `437f112`,
+  "Update dependencies") and was not re-walked against plans 001-009; the
+  2026-07-08 reconciliation log above is still only current as of `eac0dad`.
+  Run a `reconcile` pass before trusting 001-009's status rows against
+  today's `HEAD` if `437f112` isn't it anymore.
 - **Stale branch cleanup**: `advisor/007-test-lib-chat-helpers` (`fb6eb23`)
   is stale — its content landed on `canary` via `4868aea` (with the
   `useConsistentArrayType` fix applied). Safe to delete:
