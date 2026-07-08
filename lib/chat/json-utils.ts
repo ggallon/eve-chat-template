@@ -1,45 +1,5 @@
 import type { HandleMessageStreamEvent } from "eve/client";
 
-export function areEqualJsonValues(left: unknown, right: unknown): boolean {
-  if (Object.is(left, right)) {
-    return true;
-  }
-
-  if (typeof left !== typeof right || left === null || right === null) {
-    return false;
-  }
-
-  if (Array.isArray(left) || Array.isArray(right)) {
-    if (
-      !(Array.isArray(left) && Array.isArray(right)) ||
-      left.length !== right.length
-    ) {
-      return false;
-    }
-
-    return left.every((item, index) => areEqualJsonValues(item, right[index]));
-  }
-
-  if (typeof left !== "object" || typeof right !== "object") {
-    return false;
-  }
-
-  const leftRecord = left as Record<string, unknown>;
-  const rightRecord = right as Record<string, unknown>;
-  const leftKeys = Object.keys(leftRecord);
-  const rightKeys = Object.keys(rightRecord);
-
-  if (leftKeys.length !== rightKeys.length) {
-    return false;
-  }
-
-  return leftKeys.every(
-    (key) =>
-      Object.hasOwn(rightRecord, key) &&
-      areEqualJsonValues(leftRecord[key], rightRecord[key])
-  );
-}
-
 /**
  * from : https://github.com/vercel/eve/blob/210f097917cf780075694bec5b94734069282c39/packages/eve/src/client/ndjson.ts#L35-L85
  * Reads newline-delimited JSON events from a `ReadableStream<Uint8Array>`.

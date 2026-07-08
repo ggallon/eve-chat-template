@@ -436,7 +436,7 @@ To avoid losing or duplicating history, `persistSnapshot` applies:
 share a prefix, it preserves the right continuation instead of blindly
 concatenating arrays.
 
-Event comparison uses `areEqualJsonValues`, not `JSON.stringify`, so JSON object
+Event comparison uses `isDeepEqualData` from `ai` package, not `JSON.stringify`, so JSON object
 key order does not cause false mismatches.
 
 ## Pending Message Recovery

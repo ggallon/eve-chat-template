@@ -1,13 +1,12 @@
+import { isDeepEqualData } from "ai";
 import type { EveMessageData, HandleMessageStreamEvent } from "eve/client";
 import { defaultMessageReducer } from "eve/react";
-
-import { areEqualJsonValues } from "./json-utils";
 
 function areSameStreamEvent(
   left: HandleMessageStreamEvent,
   right: HandleMessageStreamEvent | undefined
 ) {
-  return right !== undefined && areEqualJsonValues(left, right);
+  return right !== undefined && isDeepEqualData(left, right);
 }
 
 export function appendUniqueStreamEvent(
