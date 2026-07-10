@@ -7,12 +7,14 @@
 > in `plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
-> **Drift check (run first, updated 2026-07-08)**:
+> **Drift check (run first, updated 2026-07-08 second pass)**:
 > `pnpm check --max-diagnostics=300 2>&1 | tail -5`
-> The 2026-07-08 baseline (commit `eac0dad`) is **100 errors + 6 warnings + 6
-> infos across 32 files**. If your count differs by more than a couple of
-> diagnostics, re-run the full audit (Step 1) and reconcile against the
-> "Drift note (2026-07-08)" section below before proceeding — do NOT trust
+> The current baseline (commit `6454200`) is **101 errors + 6 warnings + 6
+> infos across 31 files** (see "Drift note (reconcile, 2026-07-08 second
+> pass)" below — plan 010 landed and a dependency bump changed a few
+> findings since the morning's 100/32 baseline). If your count differs by
+> more than a couple of diagnostics, re-run the full audit (Step 1) and
+> reconcile against the drift notes below before proceeding — do NOT trust
 > the file list in the original 2026-06-27 drift-check command above this
 > note or any bucket map dated before 2026-07-08; the codebase structure they
 > describe (a monolithic `agent-chat.tsx`, no `lib/chat/*` module, no memory
@@ -43,10 +45,13 @@
   `message.ts`, `session.ts`, `stream.ts` — all new files, none of which
   existed when this plan or its predecessors were written), and a new memory
   feature (`lib/memory/*`, `agent/tools/save_memory.ts`,
-  `lib/db/schema/*` split from a single `lib/db/schema.ts`). **Read the
-  2026-07-08 drift note below before executing; it is the only reliable
-  bucket map — the 2026-07-01/07-03 notes and their line numbers describe a
-  codebase structure that no longer exists.**
+  `lib/db/schema/*` split from a single `lib/db/schema.ts`); **and again,
+  same day, against `6454200` (2026-07-08 second pass)** — plan 010 landed
+  plus a dependency bump (`ultracite` 7.9.0→7.9.2), a small further shift
+  (100→101 errors, 32→31 files). **Read the 2026-07-08 second-pass drift
+  note below before executing; it is the only reliable bucket map — every
+  earlier note's line numbers describe a codebase structure that no longer
+  exists.**
 
 ## Drift note (2026-07-01 re-reconciliation against `ba0cd3a`)
 
@@ -578,6 +583,97 @@ agent/tools/save_memory.ts  (1)  [NEW FILE]
 - **`tool-status.ts` has 11 diagnostics but is plan 008's target module** —
   same caveat as the original note above: if 008 has landed, its tests are
   the safety net; if not, be careful not to change exported signatures.
+
+## Drift note (reconcile, 2026-07-08 second pass, against `6454200`)
+
+Two things changed since the note above (still same calendar day, but a
+distinct commit — `eac0dad` → `6454200`, 4 commits): **plan 010 landed**
+(extracted the draft-restore hook, see `plans/010-extract-restored-draft-hook.md`,
+status DONE) and a **dependency bump** (`437f112`, `ultracite` 7.9.0→7.9.2;
+`@biomejs/biome` was already 2.5.2, unchanged). Re-ran
+`pnpm check --max-diagnostics=300`: **101 errors + 6 warnings + 6 infos
+across 31 files** (was 100/6/6/32). Net +1 error, -1 file. Two independent
+causes, verified by `git diff --stat eac0dad..HEAD -- app/ components/ lib/
+agent/` (only `agent-chat-shell.tsx`, `home-chat-page.tsx`,
+`session-chat-page.tsx` changed; `use-restored-draft.ts`/`draft-storage.ts`/
+`draft-storage.test.ts` are new and clean — `pnpm exec biome check` on those
+3 reports 0 errors):
+
+1. **Plan 010's edits (expected, self-documented in 010's own maintenance
+   note) — re-locate by rule name, not line number:**
+   - `session-chat-page.tsx`: the `:131 noEmptyBlockStatements (catch {})`
+     finding from the 2026-07-08-morning table is **gone** — plan 010 Step 5
+     replaced that exact `try { window.sessionStorage.setItem(...) } catch
+     {}` block with `writeChatDraft(pendingMessage)`, which has no empty
+     catch. One less finding to fix. The file's remaining 5 findings
+     (`useExhaustiveDependencies`×3, `noExcessiveCognitiveComplexity` info×1,
+     `noJsxPropsBind`×1) are unchanged in kind, only shifted: `:65→:67,
+     :197→:197 (unchanged), :269→:258, :308→:297, :397→:386`.
+   - `home-chat-page.tsx`: same 5 findings, same rules, shifted
+     `:53→:43, :57→:47, :116→:106, :130→:120(×2)`.
+   - `agent-chat-shell.tsx`: same 14 findings, same rules, all shifted by
+     `+1` (the new `writeChatDraft` import added one line before them):
+     `:102→:103, :290→:291, :291→:292, :297→:298, :300→:301, :307→:308,
+     :331→:332, :342→:343, :357→:358, :364→:365, :365→:366, :381→:382,
+     :389→:390, :408→:406` (this last one nets -2 because two lines were
+     removed from the `onBeforeSignIn` body between it and the earlier
+     findings).
+
+2. **The `ultracite` 7.9.0→7.9.2 bump changed rule output on three files
+   that have NOT changed since `eac0dad`** (confirmed via `git diff --stat
+   eac0dad..HEAD -- lib/chat/connection.ts components/chat/message/index.tsx
+   components/auth/user-menu.tsx` → empty). This is a real tooling-version
+   effect, not a mis-transcription — re-verify with `pnpm ls ultracite` if
+   these don't match your install:
+   - `lib/chat/connection.ts:83`'s `noUnnecessaryConditions` finding (the
+     `challenge?.instructions ?? event.data.description ?? ...` nullish
+     chain, previously flagged in the "judgement-call cluster" note above)
+     is **gone**. Nothing to fix here anymore — drop it from your Step-1
+     re-audit expectations, don't go hunting for it.
+   - `components/chat/message/index.tsx` gained **3 new
+     `noUnnecessaryConditions` findings**, all on `AgentMessagePart`'s
+     switch statement: `:140 case "text"`, `:150 case "reasoning"`, and
+     `partKey`'s `:167 case "dynamic-tool"` — biome now claims these
+     explicit cases are unreachable. **Read this function before touching
+     it** (`components/chat/message/index.tsx:124-163`): the switch also has
+     three cases *commented out* just above its `default` (`// case
+     "authorization"; // case "dynamic-tool"; // case "step-start":`), the
+     same shape as `tool-status.ts`'s already-documented pattern elsewhere
+     in this plan. If biome's type-narrowing is right that `part.type` can
+     never be `"text"` or `"reasoning"` at that point, that's a **real
+     dead-code bug** in message rendering (text/reasoning parts would
+     silently render as `null` via the `default` case) — not a lint
+     nitpick. Trace `EveMessagePart`'s definition and how `part` is narrowed
+     before this switch; if the cases are genuinely reachable (the likely
+     outcome, given the file is otherwise unchanged and this component
+     presumably renders text/reasoning parts routinely in production), this
+     is almost certainly the same "biome's control-flow analysis doesn't
+     see what the code does" situation already flagged for `tool-status.ts`
+     and `lib/chat/connection.ts` elsewhere in this plan — a
+     `biome-ignore lint/suspicious/noUnnecessaryConditions` with a one-line
+     reason is more appropriate than deleting the cases. Either way: if you
+     conclude the cases really are unreachable, **STOP and report** instead
+     of deleting them — that would be silencing a real bug via this plan's
+     unrelated lint-gate work, not fixing debt. Add this file to Bucket E's
+     `noUnnecessaryConditions` mention (currently only cites
+     `connection.ts` and `json-utils.ts`, both now needing the same
+     read-before-fixing treatment as this one).
+   - `components/auth/user-menu.tsx` gained **1 new `noJsxPropsBind`
+     finding** at `:63` (the `onClick={(event) => {...}}` on the sign-out
+     button, a plain inline handler unrelated to the `<img>` at `:99`/Bucket
+     B). Fold it into Bucket E's `noJsxPropsBind` cluster like every other
+     instance of this rule — no special handling needed, just one more
+     `useCallback` site (`user-menu.tsx`'s Bucket E count goes 1→2 items,
+     the file's total goes 2→3).
+
+**Updated Step-1 expectation**: `pnpm check --max-diagnostics=300` should
+now report **101 errors + 6 warnings + 6 infos across 31 files** at
+`6454200` (was 100/6/6/32 at `eac0dad`). If your count differs from 101/31,
+something else changed — re-derive from scratch rather than trusting either
+table. This note does not change the bucket-map PROCESS or risk assessment
+(Bucket C is still the highest-risk item, still needs 005's test safety net,
+which is DONE) — it only patches the specific file/line/count details two
+commits introduced since the morning's note.
 
 The plan body below (Steps 1-7) is left UNEDITED from planning time; its
 PROCESS is still sound (re-audit first, bucket by risk, resume-effect

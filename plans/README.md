@@ -6,9 +6,13 @@ against `6f6484f` (the prior reconcile's own commit — no source landed between
 the two), again 2026-07-03 against `971fd68` (007 tests landed on `canary`
 via `4868aea`; deps bumped in `971fd68` — `eve` 0.16→0.19, `ai` 7.0.3→7.0.14,
 `next` 16.2.9→16.2.10; 1 locale-fragile test regression surfaced, plan 009
-filed), and again 2026-07-08 against `eac0dad` (18 commits landed, including
+filed), again 2026-07-08 against `eac0dad` (18 commits landed, including
 a full decomposition of `agent-chat.tsx` and a new memory feature; plan 006
-substantially refreshed — see the 2026-07-08 reconciliation log below).
+substantially refreshed — see the 2026-07-08 reconciliation log below), and
+again 2026-07-08 (second pass, same day) against `6454200` (plan 010 landed
+and was verified DONE; a dependency bump — `ultracite` 7.9.0→7.9.2 —
+shifted plan 006's lint baseline from 100/32 to 101/31; see the newest
+reconciliation log below).
 Execute in the order below unless dependencies say otherwise. Each executor:
 read the plan fully before starting, honor its STOP conditions, and update
 your row when done.
@@ -22,11 +26,11 @@ your row when done.
 | 003  | Fail loud when rate-limit Redis is unconfigured | P1 | S | — | DONE (merged via PR #4 / `05b63cb`; re-verified 2026-07-08 against `eac0dad`: `throw new Error(...)` at `lib/rate-limit.ts:52`, no silent `return`) |
 | 004  | Re-point stale `components/chat/message.tsx` references in the docs | P2 | S | — | DONE (executed 2026-07-01; re-verified 2026-07-08: stale refs still correctly point to `components/chat/message/index.tsx`, `tool-parts.tsx`, and `tool-group.tsx`) |
 | 005  | Add a test runner (vitest) | P1 | S | — | DONE (executed 2026-07-01; re-verified 2026-07-08 against `eac0dad`: `vitest.config.ts` + `test`/`test:run` scripts present) |
-| 006  | Repair the broken `pnpm check` lint gate | P2 | **XL** (was L) | 005 | **READY — plan substantially rewritten 2026-07-08** (drifted from 60 errors/18 files at `971fd68` to **100 errors/6 warnings/6 infos across 32 files** at `eac0dad` — `agent-chat.tsx` was decomposed into 8 sibling files including a brand-new `agent-chat-shell.tsx` (14 findings), and new `lib/chat/*`/`lib/memory/*` modules from the memory feature added their own findings. The 2026-07-01/07-03 bucket map and file list are now stale; plan 006 has a new 2026-07-08 drift note with the full authoritative error table, a rebuilt bucket map (A-F), and an updated Scope section. Re-audit at Step 1 is still the executor's first move.) |
-| 007  | Characterization tests for `lib/chat/*` pure helpers (events, title, limits) | P1 | M | 005 | **DONE — 1 test still fails on `canary` (regression, unfixed)** (landed on `canary` as `4868aea`; 34/35 tests pass; `limits.test.ts:49` still fails at `eac0dad` with the same locale mismatch — plan 009 fixes it and has not been executed yet) |
-| 008  | Characterization tests for `components/chat/message/tool-status.ts` | P1 | M | 005 | **READY** (dep 005 DONE; drift check at 2026-07-08 found `tool-status.ts` changed 11 lines since `971fd68` — `getToolStatus`'s switch was refactored to a `default` case, but the behavior for every state is unchanged; plan 008 has a new drift note confirming this and remains executable as-is) |
-| 009  | Fix locale-fragile `limits.test.ts` assertion (007 regression) | P1 | S | 007 | **READY, no drift** (re-confirmed 2026-07-08: `lib/chat/limits.ts` and `lib/chat/limits.test.ts` are byte-identical to `971fd68`; `pnpm test:run` still exits 1 with the exact same failure; one-line source fix + one-line test fix; see plan 009) |
-| 010  | Extract the duplicated "restore draft from sessionStorage" effect into a shared `useRestoredDraft` hook | P3 | S | — | READY (reviewed/tightened 2026-07-08 against `7a51867`; not yet executed) |
+| 006  | Repair the broken `pnpm check` lint gate | P2 | **XL** | 005 | **READY — refreshed again 2026-07-08 (second pass)** (baseline now **101 errors/6 warnings/6 infos across 31 files** at `6454200`, up 1 error / down 1 file from the morning's 100/32 at `eac0dad`. Two causes: plan 010 landed and incidentally fixed one finding + shifted line numbers in 3 files; a dependency bump — `ultracite` 7.9.0→7.9.2 — changed rule output on 3 unrelated, unchanged files (`lib/chat/connection.ts` lost a finding, `components/chat/message/index.tsx` gained 3, `components/auth/user-menu.tsx` gained 1). Plan 006 has a new "Drift note (reconcile, 2026-07-08 second pass)" section with the full detail and a caution that `message/index.tsx`'s 3 new findings may indicate real dead code, not just lint noise — read before fixing. Re-audit at Step 1 is still the executor's first move.) |
+| 007  | Characterization tests for `lib/chat/*` pure helpers (events, title, limits) | P1 | M | 005 | **DONE — 1 test still fails on `canary` (regression, unfixed)** (landed on `canary` as `4868aea`; 34/35 tests pass; `limits.test.ts:49` still fails at `6454200` with the same locale mismatch, zero drift since `eac0dad` — plan 009 fixes it and has not been executed yet) |
+| 008  | Characterization tests for `components/chat/message/tool-status.ts` | P1 | M | 005 | **READY, no drift since `eac0dad`** (dep 005 DONE; `tool-status.ts` byte-identical to `eac0dad` — confirmed via `git diff --stat eac0dad..HEAD`; plan 008's existing drift note about the `default`-case refactor from `971fd68` still applies unchanged) |
+| 009  | Fix locale-fragile `limits.test.ts` assertion (007 regression) | P1 | S | 007 | **READY, no drift** (re-confirmed 2026-07-08 second pass: `lib/chat/limits.ts` and `lib/chat/limits.test.ts` are byte-identical to `971fd68`/`eac0dad`; `pnpm test:run` still exits 1 with the exact same failure — 41 passed/1 failed, up from 34/1 since plan 010 added 7 new passing tests; one-line source fix + one-line test fix; see plan 009) |
+| 010  | Extract the duplicated "restore draft from sessionStorage" effect into a shared `useRestoredDraft` hook | P3 | S | — | **DONE — verified 2026-07-08 second pass** (landed directly on `canary` as `6454200`; all 7 done criteria re-run and confirmed: `pnpm typecheck` exit 0, `pnpm exec vitest run lib/chat/draft-storage.test.ts` 7/7 pass, `pnpm test:run` 41 passed/1 failed — the one pre-existing `limits.test.ts` failure, exactly as predicted, `grep` shows the `"eve-chat-draft"` literal only in `lib/chat/draft-storage.ts`, scoped `pnpm exec biome check` on the 3 new files reports 0 errors, `git show --stat 6454200` touches exactly the 6 in-scope files and no others. The `advisor/010-extract-restored-draft-hook` branch is now stale — its content is identical to what's on `canary` (`git diff HEAD advisor/010-extract-restored-draft-hook` is empty) — safe to delete.) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
 
@@ -75,28 +79,21 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
   `"en-US"` in the source and updates the test. 009 should execute BEFORE
   006 — a red `pnpm test:run` gate would block 006's test-dependent buckets.
   009 is independent of 008 (different files).
-- **010 is independent** — no dependency on any other plan, and no other
-  plan depends on it. It touches `home-chat-page.tsx`, `session-chat-page.tsx`,
-  and `agent-chat-shell.tsx`, all of which plan 006 also touches for
-  unrelated lint findings; **whichever of 006/010 executes second should
-  expect the other's line-number shifts** in those three files (010's own
-  "Maintenance notes" section flags this from 010's side). No ordering
-  requirement — they can run in either order or in parallel on separate
-  branches, just re-diff before assuming a stale line number in the other
-  plan is still accurate.
-- **010 was added via a targeted `plan <description>` request (2026-07-08,
-  against `437f112`) and reviewed/tightened the same day against `7a51867`,
-  not a full `/improve` audit or a `reconcile` pass.**
-  One commit landed since the last reconcile (`eac0dad` → `437f112`,
-  "Update dependencies") and was not re-walked against plans 001-009; the
-  2026-07-08 reconciliation log above is still only current as of `eac0dad`.
-  Run a `reconcile` pass before trusting 001-009's status rows against
-  today's `HEAD` if `437f112` isn't it anymore.
-- **Stale branch cleanup**: `advisor/007-test-lib-chat-helpers` (`fb6eb23`)
-  is stale — its content landed on `canary` via `4868aea` (with the
-  `useConsistentArrayType` fix applied). Safe to delete:
-  `git branch -D advisor/007-test-lib-chat-helpers`. Still present as of
-  2026-07-08 — nobody has run the delete yet.
+- **010 is DONE (landed directly on `canary` as `6454200`, verified
+  2026-07-08 second-pass reconcile)** — it touched `home-chat-page.tsx`,
+  `session-chat-page.tsx`, and `agent-chat-shell.tsx`, all of which plan 006
+  also touches for unrelated lint findings. As predicted, 006's line numbers
+  in those three files shifted; plan 006's new 2026-07-08-second-pass drift
+  note has the updated numbers. No further action needed for 010 itself.
+- **Stale branch cleanup (two branches now, not one)**:
+  - `advisor/007-test-lib-chat-helpers` (`fb6eb23`) — its content landed on
+    `canary` via `4868aea` (with the `useConsistentArrayType` fix applied).
+    Safe to delete: `git branch -D advisor/007-test-lib-chat-helpers`. Still
+    present as of 2026-07-08 — nobody has run the delete yet.
+  - `advisor/010-extract-restored-draft-hook` (`eeefc29`) — its content
+    landed on `canary` via `6454200` (`git diff HEAD
+    advisor/010-extract-restored-draft-hook` is empty). Safe to delete:
+    `git branch -D advisor/010-extract-restored-draft-hook`.
 - **Perf findings (F10/F11/F12: `AgentMessage` memoization, per-event
   ownership-SELECT redundancy, O(n²) event-log dedup)** touch the streaming
   hot path in `agent-chat.tsx` and benefit from 007/008's tests existing
@@ -448,6 +445,79 @@ above), not a measurement artifact.
   (a new feature + a large refactor landed together) — reconcile only keeps
   existing plans honest, it doesn't replace a fresh audit.
 
+## Reconciliation log (2026-07-08 second pass, against `6454200`)
+
+Four commits landed since the prior reconcile (`eac0dad`): `6208494`
+("Reconcile plans" — the prior reconcile's own commit), `437f112` ("Update
+dependencies" — `ai` 7.0.16→7.0.17, `@typescript/native-preview` bumped,
+`ultracite` 7.9.0→7.9.2, `vitest` 4.1.9→4.1.10; `@biomejs/biome` unchanged at
+2.5.2), `de1bda4` ("Add Plan 010" — the plan file itself), and `6454200`
+("Plan 010 extract restored draft hook" — the plan's execution, landed
+directly on `canary`, not via a merged PR). Net source diff since `eac0dad`:
+`git diff --stat eac0dad..HEAD -- app/ components/ lib/ agent/` touches
+exactly 6 files (3 modified: `agent-chat-shell.tsx`, `home-chat-page.tsx`,
+`session-chat-page.tsx`; 3 new: `use-restored-draft.ts`, `draft-storage.ts`,
+`draft-storage.test.ts`) — all plan 010's Step 1-6 changes, nothing else.
+
+- **001-005 verified DONE (still)**, re-confirmed against `6454200`: 001
+  `components/chat/message/` 9 files, `message.tsx` absent; 002 `throw` at
+  `lib/auth.ts:15`; 003 `throw` at `lib/rate-limit.ts:52`; 004 doc refs at
+  `docs/how-the-chatbot-works.md` 41/714/831 correctly re-pointed; 005
+  `vitest.config.ts` + `test`/`test:run` scripts present.
+- **010 verified DONE** — re-ran every done criterion from
+  `plans/010-extract-restored-draft-hook.md` against `6454200` fresh (not
+  trusting the executor's own report, since none was available — this plan
+  was executed directly rather than through the `execute` dispatch flow):
+  `pnpm typecheck` exit 0; `pnpm exec vitest run lib/chat/draft-storage.test.ts`
+  → 7/7 pass; `pnpm test:run` → 41 passed/1 failed (the 1 failure is
+  `limits.test.ts:49`, the pre-existing locale regression plan 009 fixes —
+  exactly the count plan 010 predicted for "before 009 lands"); `grep -rn
+  --exclude='*.test.ts' "eve-chat-draft" app/ components/ lib/` → exactly one
+  match, the definition in `lib/chat/draft-storage.ts`; `pnpm exec biome
+  check lib/chat/draft-storage.ts lib/chat/draft-storage.test.ts
+  app/_components/use-restored-draft.ts` → 0 errors; `git show --stat
+  6454200` touches exactly the 6 in-scope files listed in the plan's Scope
+  section, nothing else (verified by reading the full diff, not just the
+  stat — every hunk traces to a specific plan step: Step 1's storage module,
+  Step 3's hook, Steps 4-6's three call-site replacements). No scope
+  violations, no undocumented deviations. The landed test file has 2 extra
+  helper methods (`clear`, `key`, a `length` getter) on the fake
+  `Storage` mock beyond the plan's exact snippet — a harmless superset that
+  doesn't change what's asserted; not a deviation worth flagging.
+- **006 refreshed again (small drift, not a rewrite)**: baseline moved from
+  100 errors/32 files (`eac0dad`) to **101 errors/31 files** (`6454200`).
+  Root-caused to two independent, unrelated changes (full detail now lives
+  in plan 006's own "Drift note (reconcile, 2026-07-08 second pass)"
+  section, not duplicated here): plan 010's edits shifted line numbers in 3
+  files and incidentally fixed one `noEmptyBlockStatements` finding in
+  `session-chat-page.tsx` (removed a `catch {}` block); separately, the
+  `ultracite` 7.9.0→7.9.2 bump changed rule output on 3 files that have
+  **not** changed since `eac0dad` (`lib/chat/connection.ts` lost a finding,
+  `components/chat/message/index.tsx` gained 3 — flagged as worth
+  investigating for a real dead-code bug, not blind-fixing — and
+  `components/auth/user-menu.tsx` gained 1). The bucket-map PROCESS and risk
+  assessment (Bucket C highest-risk, 005 dependency) are unaffected. Still
+  READY.
+- **007, 008, 009 confirmed zero drift**: `git diff --stat eac0dad..HEAD --
+  lib/chat/events.ts lib/chat/events.test.ts lib/chat/title.ts
+  lib/chat/title.test.ts lib/chat/limits.ts lib/chat/limits.test.ts
+  components/chat/message/tool-status.ts` is empty. All three plans
+  executable exactly as written; 007's `canary` regression is unchanged.
+- **Watch items re-verified at `6454200`**: `eve` still 0.22.0 (untouched by
+  this dependency bump); `node_modules/eve/dist/docs/public/` still does not
+  exist; `AGENTS.md` still 34 lines, still points at the missing path;
+  `lib/rate-limit.ts:60-63`'s `incr`/`expire` race still present, unchanged;
+  dead `@shikijs/*`/`shiki` v4 deps still declared; `#evals/*` import map
+  still points at a nonexistent dir; `lib/setup.ts` still does not exist.
+  Not re-walked this pass (unchanged from `eac0dad`, no reason to suspect
+  drift): README env-var labeling, Mermaid/Shiki bundle size, `pnpm audit`.
+- **Two stale branches identified, neither deleted (reconcile is read-only
+  on the git tree)**: `advisor/007-test-lib-chat-helpers` (flagged since
+  2026-07-03, still not deleted) and the newly-stale
+  `advisor/010-extract-restored-draft-hook` (content landed via `6454200`,
+  `git diff HEAD advisor/010-extract-restored-draft-hook` is empty). Both
+  are safe one-line `git branch -D` deletes for the user to run.
+
 ## Notes
 
 - This set was produced by a full audit (Phase 1 recon + parallel category
@@ -488,6 +558,17 @@ above), not a measurement artifact.
   diagnostics across 8 new files). Plan 006 was rewritten in place with the
   full current table; see the 2026-07-08 reconciliation log above for the
   file-by-file breakdown.
+- **Baseline at `6454200` (2026-07-08 second pass, fifth reconcile)**: `pnpm
+  typecheck` exit 0; `pnpm test:run` **exit 1** — **41 passed, 1 failed**
+  (up from 34/1 — plan 010 added 7 new passing tests in
+  `lib/chat/draft-storage.test.ts`; the 1 failure is still
+  `limits.test.ts:49`, plan 009 unexecuted); `pnpm check` exit 1 with **101
+  errors + 6 warnings + 6 infos across 31 files** — a small further drift
+  from `eac0dad`'s 100/6/6/32, caused by plan 010 landing (fixed one
+  finding, shifted line numbers in 3 files) plus a dependency bump
+  (`ultracite` 7.9.0→7.9.2, changed rule output on 3 unrelated files). Plan
+  006 got a small addendum, not a rewrite; see the 2026-07-08-second-pass
+  reconciliation log above.
 - All plans inline the conventions, excerpts, and commands the executor
   needs; no plan references "the audit" or "the discussion."
 
