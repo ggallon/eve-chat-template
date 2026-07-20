@@ -39,11 +39,12 @@ describe("isChatTurnSettledEvent", () => {
           type: "session.waiting",
         },
       ],
-    ] as Readonly<
-      [string, HandleMessageStreamEvent]
-    >[])("returns true for %s", (_, event) => {
-      expect(isChatTurnSettledEvent(event)).toBe(true);
-    });
+    ] as Readonly<[string, HandleMessageStreamEvent]>[])(
+      "returns true for %s",
+      (_, event) => {
+        expect(isChatTurnSettledEvent(event)).toBe(true);
+      }
+    );
   });
 
   describe("non-settled event types", () => {
@@ -173,11 +174,12 @@ describe("isChatTurnSettledEvent", () => {
           type: "authorization.completed",
         },
       ],
-    ] as Readonly<
-      [string, HandleMessageStreamEvent]
-    >[])("returns false for %s", (_, event) => {
-      expect(isChatTurnSettledEvent(event)).toBe(false);
-    });
+    ] as Readonly<[string, HandleMessageStreamEvent]>[])(
+      "returns false for %s",
+      (_, event) => {
+        expect(isChatTurnSettledEvent(event)).toBe(false);
+      }
+    );
   });
 
   it("returns false for an unknown type string", () => {
