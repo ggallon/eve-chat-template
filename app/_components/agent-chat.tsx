@@ -7,7 +7,6 @@ import type {
   SessionState,
 } from "eve/client";
 import { useEveAgent } from "eve/react";
-import { ExternalLinkIcon, PlugIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   type ReactNode,
@@ -33,7 +32,6 @@ import {
   ChatScrollButton,
 } from "@/components/chat/conversation";
 import { AgentMessage } from "@/components/chat/message";
-import { Button, buttonVariants } from "@/components/ui/button";
 import {
   createAuthorizationDeclinedEvents,
   createConnectionClientContext,
@@ -69,17 +67,31 @@ import {
 import { namespaceStreamEvent } from "@/lib/chat/stream";
 import type { ActiveChat } from "@/lib/chat/types";
 import { useChatShell } from "./chat-shell-context";
+import { ConnectionAuthorizationPrompt } from "./connection-authorization-prompt";
 import { IDLE_CONTROLLER_STATUS } from "./controller";
 import { ErrorToast } from "./error-toast";
+import { ThinkingMessage, useThinkingPresence } from "./thinking";
 import type {
   AgentChatController,
   AgentChatControllerStatus,
   DraftHandlers,
 } from "./types";
+import { usePendingUserMessage } from "./use-pending-user-message";
 
 type AgentSnapshot = EveAgentStoreSnapshot<EveMessageData>;
 
-const THINKING_EXIT_DURATION_MS = 180;
+interface AgentChatSession {
+  readonly activeChat: ActiveChat | null;
+  readonly chatId?: string | null;
+  readonly emptyComposer?: ReactNode;
+  readonly onActiveChatUpdated?: (activeChat: ActiveChat) => void;
+  readonly onControllerChange: (
+    controller: AgentChatController | null,
+    status: AgentChatControllerStatus
+  ) => void;
+  readonly onPendingUserMessageSettled?: (message?: string) => void;
+  readonly pendingUserMessage?: string | null;
+}
 
 export function AgentChatSession({
   activeChat,
@@ -89,18 +101,7 @@ export function AgentChatSession({
   onPendingUserMessageSettled,
   onControllerChange,
   pendingUserMessage,
-}: {
-  readonly activeChat: ActiveChat | null;
-  readonly chatId?: string | null;
-  readonly emptyComposer?: ReactNode;
-  readonly onActiveChatUpdated?: (activeChat: ActiveChat) => void;
-  readonly onPendingUserMessageSettled?: (message?: string) => void;
-  readonly onControllerChange: (
-    controller: AgentChatController | null,
-    status: AgentChatControllerStatus
-  ) => void;
-  readonly pendingUserMessage?: string | null;
-}) {
+}: AgentChatSession) {
   const {
     activeChatId: shellActiveChatId,
     enabledConnections,
@@ -172,9 +173,9 @@ export function AgentChatSession({
 
   const persistSnapshot = useCallback(
     async (snapshot: AgentSnapshot) => {
-      const chatId = activeChatIdRef.current;
+      const persistSnapshotChatId = activeChatIdRef.current;
 
-      if (!(viewer && chatId)) {
+      if (!(viewer && persistSnapshotChatId)) {
         stopFinalizingTurn();
         return;
       }
@@ -210,7 +211,7 @@ export function AgentChatSession({
         );
 
         await saveChatSnapshotAction({
-          chatId,
+          chatId: persistSnapshotChatId,
           events,
           session,
         });
@@ -219,13 +220,13 @@ export function AgentChatSession({
         streamEventsRef.current = [];
         setStreamEvents([]);
         touchChat({
-          id: chatId,
+          id: persistSnapshotChatId,
           title: currentTitleRef.current,
           updatedAt: new Date().toISOString(),
         });
         onActiveChatUpdated?.({
           events,
-          id: chatId,
+          id: persistSnapshotChatId,
           pendingUserMessage: null,
           session,
           title: currentTitleRef.current,
@@ -269,9 +270,9 @@ export function AgentChatSession({
         stopFinalizingTurn();
       }
 
-      const chatId = activeChatIdRef.current;
+      const persistStreamEventChatId = activeChatIdRef.current;
 
-      if (!(viewer && chatId)) {
+      if (!(viewer && persistStreamEventChatId)) {
         return;
       }
 
@@ -279,7 +280,7 @@ export function AgentChatSession({
       eventIndexRef.current += 1;
 
       void appendChatEventAction({
-        chatId,
+        chatId: persistStreamEventChatId,
         event: displayEvent,
         eventIndex,
       }).catch((error) => {
@@ -295,15 +296,15 @@ export function AgentChatSession({
 
   const persistSessionState = useCallback(
     async (session: SessionState) => {
-      const chatId = activeChatIdRef.current;
+      const persistSessionStateChatId = activeChatIdRef.current;
 
-      if (!(viewer && chatId && session.sessionId)) {
+      if (!(viewer && persistSessionStateChatId && session.sessionId)) {
         return;
       }
 
       try {
         await saveChatSessionStateAction({
-          chatId,
+          chatId: persistSessionStateChatId,
           session,
         });
       } catch (error) {
@@ -511,25 +512,25 @@ export function AgentChatSession({
       }
 
       if (!ready) {
-        const chatId = activeChatIdRef.current;
+        const pendingChatId = activeChatIdRef.current;
 
-        if (chatId) {
-          void clearChatPendingMessageAction(chatId);
+        if (pendingChatId) {
+          void clearChatPendingMessageAction(pendingChatId);
         }
         restoreAfterFailedSend();
         return;
       }
 
-      const chatId = activeChatIdRef.current;
+      const readyChatId = activeChatIdRef.current;
 
-      if (!chatId) {
+      if (!readyChatId) {
         restoreAfterFailedSend("Chat is still getting ready.");
         return;
       }
 
       try {
         const updated = await markChatPendingMessageAction({
-          chatId,
+          chatId: readyChatId,
           message,
         });
         touchChat(updated);
@@ -554,7 +555,7 @@ export function AgentChatSession({
         }
 
         stopFinalizingTurn();
-        void clearChatPendingMessageAction(chatId);
+        void clearChatPendingMessageAction(readyChatId);
         restoreAfterFailedSend(
           error instanceof Error ? error.message : "Failed to send message."
         );
@@ -1007,131 +1008,6 @@ export function AgentChatSession({
         </>
       )}
     </>
-  );
-}
-
-function ConnectionAuthorizationPrompt({
-  authorization,
-  isSkipping,
-  onSkip,
-}: {
-  readonly authorization: PendingConnectionAuthorization;
-  readonly isSkipping: boolean;
-  readonly onSkip: (
-    authorization: PendingConnectionAuthorization
-  ) => Promise<void>;
-}) {
-  return (
-    <article aria-live="polite" className="flex w-full justify-start px-3">
-      <div className="w-full max-w-md rounded-lg border border-border/70 bg-muted/20 p-3 text-sm shadow-sm">
-        <div className="flex gap-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
-            <PlugIcon className="size-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-foreground">
-              Connect {authorization.displayName}
-            </p>
-            <p className="mt-1 text-muted-foreground">
-              {authorization.description}
-            </p>
-            <div className="mt-2.5 flex items-center gap-2">
-              {authorization.url ? (
-                <a
-                  className={buttonVariants({
-                    variant: "default",
-                    size: "xs",
-                  })}
-                  href={authorization.url}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  Connect
-                  <ExternalLinkIcon className="size-3" />
-                </a>
-              ) : null}
-              <Button
-                disabled={isSkipping}
-                onClick={() => {
-                  void onSkip(authorization);
-                }}
-                size="xs"
-                type="button"
-                variant="outline"
-              >
-                {isSkipping ? "Skipping..." : "Skip"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function usePendingUserMessage() {
-  const [message, setMessageState] = useState<string | null>(null);
-  const messageRef = useRef<string | null>(null);
-
-  const setMessage = useCallback((nextMessage: string | null) => {
-    messageRef.current = nextMessage;
-    setMessageState(nextMessage);
-  }, []);
-
-  const clearMessage = useCallback(() => {
-    setMessage(null);
-  }, [setMessage]);
-
-  return { clearMessage, message, messageRef, setMessage };
-}
-
-function useThinkingPresence(active: boolean) {
-  const [shouldRender, setShouldRender] = useState(active);
-  const [isVisible, setIsVisible] = useState(active);
-
-  useEffect(() => {
-    if (active) {
-      setShouldRender(true);
-
-      const frame = window.requestAnimationFrame(() => {
-        setIsVisible(true);
-      });
-
-      return () => {
-        window.cancelAnimationFrame(frame);
-      };
-    }
-
-    setIsVisible(false);
-
-    const timeout = window.setTimeout(() => {
-      setShouldRender(false);
-    }, THINKING_EXIT_DURATION_MS);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [active]);
-
-  return { isVisible, shouldRender };
-}
-
-function ThinkingMessage({ isVisible }: { readonly isVisible: boolean }) {
-  return (
-    <article
-      aria-live={isVisible ? "polite" : "off"}
-      className={[
-        "flex w-full justify-start overflow-hidden transition-[opacity,transform,max-height] duration-200 ease-out",
-        isVisible
-          ? "max-h-8 translate-y-0 opacity-100"
-          : "max-h-0 -translate-y-1 opacity-0",
-      ].join(" ")}
-      role="status"
-    >
-      <div className="px-3 font-medium text-[15px] text-muted-foreground leading-6">
-        <span className="shimmer-text">Thinking...</span>
-      </div>
-    </article>
   );
 }
 
