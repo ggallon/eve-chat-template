@@ -80,7 +80,6 @@ import type {
 type AgentSnapshot = EveAgentStoreSnapshot<EveMessageData>;
 
 const THINKING_EXIT_DURATION_MS = 180;
-const TURN_FINALIZE_SETTLE_DELAY_MS = 250;
 
 export function AgentChatSession({
   activeChat,
@@ -149,7 +148,6 @@ export function AgentChatSession({
   const resumedEventsRef = useRef<HandleMessageStreamEvent[]>([]);
   const streamEventsRef = useRef<HandleMessageStreamEvent[]>([]);
   const localEventsRef = useRef<HandleMessageStreamEvent[]>([]);
-  const finalizeTimerRef = useRef<number | null>(null);
   const onSessionStartedRef = useRef<
     (session: SessionState) => Promise<void> | void
   >(() => {});
@@ -160,32 +158,17 @@ export function AgentChatSession({
   });
   const router = useRouter();
 
-  const clearFinalizeTimer = useCallback(() => {
-    if (finalizeTimerRef.current === null) {
-      return;
-    }
-
-    window.clearTimeout(finalizeTimerRef.current);
-    finalizeTimerRef.current = null;
+  const startFinalizingTurn = useCallback(() => {
+    setIsFinalizingTurn(true);
   }, []);
 
-  const startFinalizingTurn = useCallback(() => {
-    clearFinalizeTimer();
-    setIsFinalizingTurn(true);
-  }, [clearFinalizeTimer]);
-
   const stopFinalizingTurn = useCallback(() => {
-    clearFinalizeTimer();
     setIsFinalizingTurn(false);
-  }, [clearFinalizeTimer]);
+  }, []);
 
   const finishFinalizingTurn = useCallback(() => {
-    clearFinalizeTimer();
-    finalizeTimerRef.current = window.setTimeout(() => {
-      finalizeTimerRef.current = null;
-      setIsFinalizingTurn(false);
-    }, TURN_FINALIZE_SETTLE_DELAY_MS);
-  }, [clearFinalizeTimer]);
+    setIsFinalizingTurn(false);
+  }, []);
 
   const persistSnapshot = useCallback(
     async (snapshot: AgentSnapshot) => {
@@ -782,8 +765,6 @@ export function AgentChatSession({
     isTurnBlocked,
     stopFinalizingTurn,
   ]);
-
-  useEffect(() => clearFinalizeTimer, [clearFinalizeTimer]);
 
   useEffect(() => {
     if (
