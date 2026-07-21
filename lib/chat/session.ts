@@ -69,6 +69,7 @@ export function createSessionWaitingEvent(): HandleMessageStreamEvent {
   return {
     data: {
       wait: "next-user-message",
+      continuationToken: "token:next-user-message",
     },
     meta: {
       at: new Date().toISOString(),
