@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckIcon, MenuIcon, PanelLeftIcon, UploadIcon } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { MenuIcon, PanelLeftIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   type ReactNode,
   Suspense,
@@ -21,11 +21,6 @@ import { AuthDisplayLoggedOut } from "@/components/auth/auth-display";
 import { SignInModal } from "@/components/auth/sign-in-modal";
 import { ChatSidebar } from "@/components/chat/sidebar";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { writeChatDraft } from "@/lib/chat/draft-storage";
 import { mergeChatHistory } from "@/lib/chat/message";
 import {
@@ -41,6 +36,7 @@ import type {
 } from "@/lib/chat/types";
 import { cn } from "@/lib/ui/cn";
 import { ChatShellProvider } from "./chat-shell-context";
+import { ChatRouteShareButton } from "./share-chat-button";
 
 export function AgentChatShell({
   children,
@@ -277,22 +273,6 @@ export function AgentChatShell({
     ]
   );
 
-  const sidebar = (
-    <ChatSidebar
-      activeChatId={activeChatId}
-      chats={history}
-      hasMoreChats={Boolean(nextCursor)}
-      isLoadingChats={historyLoading}
-      isLoadingMore={loadingMore}
-      onDeleteChat={handleDeleteChat}
-      onLoadMoreChats={loadMoreChats}
-      onNavigate={handleSidebarNavigate}
-      onNewChat={startNewChat}
-      onSignIn={() => requestSignIn()}
-      onToggleSidebar={() => setDesktopSidebarOpenPersisted(false)}
-      viewer={viewerState}
-    />
-  );
   const loggedOutAuthActions = historyLoading ? (
     <AuthDisplayLoggedOut>
       <AuthTopActions onSignIn={() => requestSignIn()} />
@@ -320,7 +300,20 @@ export function AgentChatShell({
           )}
           data-desktop-sidebar
         >
-          {sidebar}
+          <ChatSidebar
+            activeChatId={activeChatId}
+            chats={history}
+            hasMoreChats={Boolean(nextCursor)}
+            isLoadingChats={historyLoading}
+            isLoadingMore={loadingMore}
+            onDeleteChat={handleDeleteChat}
+            onLoadMoreChats={loadMoreChats}
+            onNavigate={handleSidebarNavigate}
+            onNewChat={startNewChat}
+            onSignIn={() => requestSignIn()}
+            onToggleSidebar={() => setDesktopSidebarOpenPersisted(false)}
+            viewer={viewerState}
+          />
         </div>
 
         <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -424,74 +417,6 @@ function setSidebarDocumentHint(open: boolean) {
   } else {
     document.documentElement.dataset.eveChatSidebar = "closed";
   }
-}
-
-function ChatRouteShareButton() {
-  const pathname = usePathname();
-
-  if (!pathname.startsWith("/chat/")) {
-    return null;
-  }
-
-  return <ShareChatButton />;
-}
-
-function ShareChatButton() {
-  const [copied, setCopied] = useState(false);
-  const copyResetTimerRef = useRef<number | null>(null);
-
-  const clearCopyResetTimer = useCallback(() => {
-    if (copyResetTimerRef.current === null) {
-      return;
-    }
-
-    window.clearTimeout(copyResetTimerRef.current);
-    copyResetTimerRef.current = null;
-  }, []);
-
-  const handleCopyLink = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      clearCopyResetTimer();
-      setCopied(true);
-      copyResetTimerRef.current = window.setTimeout(() => {
-        copyResetTimerRef.current = null;
-        setCopied(false);
-      }, 1600);
-    } catch {
-      setCopied(false);
-    }
-  }, [clearCopyResetTimer]);
-
-  useEffect(() => clearCopyResetTimer, [clearCopyResetTimer]);
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <span className="inline-block w-fit">
-            <Button
-              aria-label={copied ? "Copied chat link" : "Copy chat link"}
-              className="text-muted-foreground hover:text-foreground"
-              onClick={handleCopyLink}
-              size="icon-sm"
-              type="button"
-              variant="ghost"
-            >
-              {copied ? (
-                <CheckIcon className="size-4" />
-              ) : (
-                <UploadIcon className="size-4" />
-              )}
-            </Button>
-          </span>
-        }
-      />
-      <TooltipContent side="bottom">
-        {copied ? "Copied" : "Copy link"}
-      </TooltipContent>
-    </Tooltip>
-  );
 }
 
 function AuthTopActions({ onSignIn }: { readonly onSignIn: () => void }) {
