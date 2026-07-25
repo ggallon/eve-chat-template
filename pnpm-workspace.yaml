@@ -12,6 +12,5 @@ minimumReleaseAgeExclude:
   - eve
   - next
 
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
+overrides:
+  postcss: "8.5.22"
