@@ -1,6 +1,11 @@
-node_modules
+.agents
+.codegraph
+.conductor
 .eve
 .next
-.output
 .nitro
+.output
+.workflow-data
+.zed
 dist
+node_modules
