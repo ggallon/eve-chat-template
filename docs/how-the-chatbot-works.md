@@ -58,21 +58,21 @@ Important files:
 There are two related but separate concepts:
 
 1. A **local app chat**, a row in the `chat` table.
-2. An **eve session**, eve's durable `SessionState` plus its remote session stream.
+2. An **eve session**, eve's durable `ClientSessionState` plus its remote session stream.
 
 The app chat gives you a stable URL such as `/chat/[id]`, a sidebar title, and a persisted event history. The eve session is the durable conversation state eve uses to continue a turn, wait for authorization, resume streams, and accept follow-up input.
 
 The app stores eve session state on the chat row:
 
 ```ts
-chat.eveSession: SessionState | null
+chat.eveSession: ClientSessionState | null
 ```
 
 The app stores eve stream events in ordered rows:
 
 ```ts
 chat_event.eventIndex: number
-chat_event.event: HandleMessageStreamEvent
+chat_event.event: MessageStreamEvent
 ```
 
 Keep these indices separate. `eveSession.streamIndex` tells eve where to resume in the remote session stream. `chat_event.eventIndex` tells Postgres how to order the local event log for rendering. They are not interchangeable.

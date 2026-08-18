@@ -25,7 +25,7 @@ import {
 } from "./agent-chat-events";
 import { useChatShell } from "./chat-shell-context";
 import { ComposerFooterControls } from "./composer-footer-controls";
-import { IDLE_CONTROLLER_STATUS } from "./controller";
+import { IDLE_AGENT_CHAT_CONTROLLER_STATUS } from "./controller";
 import { ErrorToast } from "./error-toast";
 import type { AgentChatController, AgentChatControllerStatus } from "./types";
 import { useRestoredDraft } from "./use-restored-draft";
@@ -42,7 +42,7 @@ export function SessionChatPage({
   const [draft, setDraft] = useState("");
   const [controllerReady, setControllerReady] = useState(false);
   const [controllerStatus, setControllerStatus] = useState(
-    IDLE_CONTROLLER_STATUS
+    IDLE_AGENT_CHAT_CONTROLLER_STATUS
   );
   const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(
     null
@@ -67,7 +67,7 @@ export function SessionChatPage({
   useEffect(() => {
     controllerRef.current = null;
     setControllerReady(false);
-    setControllerStatus(IDLE_CONTROLLER_STATUS);
+    setControllerStatus(IDLE_AGENT_CHAT_CONTROLLER_STATUS);
     setActiveChat(null);
     setDraft("");
     setPendingUserMessage(null);
@@ -307,6 +307,7 @@ export function SessionChatPage({
       setControllerReady(Boolean(controller));
       setControllerStatus((current) =>
         current.isBusy === status.isBusy &&
+        current.isCancelling === status.isCancelling &&
         current.isDisabled === status.isDisabled &&
         current.isEmpty === status.isEmpty
           ? current
@@ -369,9 +370,7 @@ export function SessionChatPage({
 
   const composerDisabled =
     isLoadingChat || Boolean(pendingUserMessage) || controllerStatus.isDisabled;
-  const sessionInstanceKey = activeChat
-    ? `${chatId}:loaded`
-    : `${chatId}:loading`;
+  const sessionInstanceKey = getSessionInstanceKey(chatId, activeChat);
   const composerDisabledReason = getSessionComposerDisabledReason({
     controllerStatus,
     isLoadingChat,
@@ -404,6 +403,7 @@ export function SessionChatPage({
             disabledReason={composerDisabledReason}
             footerStart={<ComposerFooterControls />}
             isBusy={controllerStatus.isBusy}
+            isStopping={controllerStatus.isCancelling}
             onChange={setDraft}
             onStop={handleComposerStop}
             onSubmit={handleComposerSubmit}
@@ -418,6 +418,17 @@ export function SessionChatPage({
       </div>
     </div>
   );
+}
+
+function getSessionInstanceKey(chatId: string, activeChat: ActiveChat | null) {
+  if (!activeChat) {
+    return `${chatId}:loading`;
+  }
+
+  const sessionId = activeChat.session?.sessionId ?? "new";
+  const streamIndex = activeChat.session?.streamIndex ?? 0;
+
+  return `${chatId}:${sessionId}:${streamIndex}:${activeChat.events.length}`;
 }
 
 function getRestorablePendingUserMessage(

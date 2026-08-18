@@ -1,4 +1,4 @@
-import type { HandleMessageStreamEvent } from "eve/client";
+import type { MessageStreamEvent } from "eve/client";
 
 import { describe, expect, it } from "vitest";
 
@@ -17,10 +17,18 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "authorization.required",
         },
       ],
-      ["session.completed", { type: "session.completed" }],
+      [
+        "session.completed",
+        {
+          data: {},
+          meta: { at: "iso-string", id: "1" },
+          type: "session.completed",
+        },
+      ],
       [
         "session.failed",
         {
@@ -29,17 +37,22 @@ describe("isChatTurnSettledEvent", () => {
             message: "boom",
             sessionId: "session-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "session.failed",
         },
       ],
       [
         "session.waiting",
         {
-          data: { wait: "next-user-message" },
+          data: {
+            wait: "next-user-message",
+            continuationToken: "test",
+          },
+          meta: { at: "iso-string", id: "1" },
           type: "session.waiting",
         },
       ],
-    ] as Readonly<[string, HandleMessageStreamEvent]>[])(
+    ] as Readonly<[string, MessageStreamEvent]>[])(
       "returns true for %s",
       (_, event) => {
         expect(isChatTurnSettledEvent(event)).toBe(true);
@@ -49,11 +62,19 @@ describe("isChatTurnSettledEvent", () => {
 
   describe("non-settled event types", () => {
     it.each([
-      ["session.started", { data: {}, type: "session.started" }],
+      [
+        "session.started",
+        {
+          data: {},
+          meta: { at: "iso-string", id: "1" },
+          type: "session.started",
+        },
+      ],
       [
         "turn.started",
         {
           data: { sequence: 0, turnId: "turn-1" },
+          meta: { at: "iso-string", id: "1" },
           type: "turn.started",
         },
       ],
@@ -65,6 +86,7 @@ describe("isChatTurnSettledEvent", () => {
             sequence: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "message.received",
         },
       ],
@@ -78,6 +100,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "message.appended",
         },
       ],
@@ -91,6 +114,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "message.completed",
         },
       ],
@@ -103,6 +127,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "actions.requested",
         },
       ],
@@ -116,6 +141,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "action.result",
         },
       ],
@@ -128,6 +154,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "input.requested",
         },
       ],
@@ -139,6 +166,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "step.started",
         },
       ],
@@ -151,6 +179,7 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "step.completed",
         },
       ],
@@ -171,10 +200,11 @@ describe("isChatTurnSettledEvent", () => {
             stepIndex: 0,
             turnId: "turn-1",
           },
+          meta: { at: "iso-string", id: "1" },
           type: "authorization.completed",
         },
       ],
-    ] as Readonly<[string, HandleMessageStreamEvent]>[])(
+    ] as Readonly<[string, MessageStreamEvent]>[])(
       "returns false for %s",
       (_, event) => {
         expect(isChatTurnSettledEvent(event)).toBe(false);
@@ -185,7 +215,7 @@ describe("isChatTurnSettledEvent", () => {
   it("returns false for an unknown type string", () => {
     const event = {
       type: "unknown.event",
-    } as unknown as HandleMessageStreamEvent;
+    } as unknown as MessageStreamEvent;
 
     expect(isChatTurnSettledEvent(event)).toBe(false);
   });

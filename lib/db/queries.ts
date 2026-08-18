@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, gte, lt, or, sql } from "drizzle-orm";
-import type { HandleMessageStreamEvent, SessionState } from "eve/client";
+import type { ClientSessionState, MessageStreamEvent } from "eve/client";
 import { isChatTurnSettledEvent } from "@/lib/chat/events";
 import { createFallbackTitle, DEFAULT_CHAT_TITLE } from "@/lib/chat/title";
 import type { ActiveChat, ChatListItem, ChatListPage } from "@/lib/chat/types";
@@ -230,6 +230,75 @@ export async function clearChatPendingMessage({
     .where(and(eq(chat.id, chatId), eq(chat.userId, userId)));
 }
 
+export async function saveChatSessionState({
+  chatId,
+  session,
+  userId,
+}: {
+  readonly chatId: string;
+  readonly session: ClientSessionState;
+  readonly userId: string;
+}) {
+  await db
+    .update(chat)
+    .set({
+      eveSession: session,
+    })
+    .where(
+      and(
+        eq(chat.id, chatId),
+        eq(chat.userId, userId),
+        sql`(
+          ${chat.eveSession} is null
+          or ${chat.eveSession}->>'sessionId' <> ${session.sessionId}
+          or coalesce((${chat.eveSession}->>'streamIndex')::integer, 0) <= ${session.streamIndex}
+        )`
+      )
+    );
+}
+
+export async function appendChatEvents({
+  chatId,
+  events,
+  userId,
+}: {
+  readonly chatId: string;
+  readonly events: readonly {
+    readonly event: MessageStreamEvent;
+    readonly eventIndex: number;
+  }[];
+  readonly userId: string;
+}) {
+  if (events.length === 0) {
+    return;
+  }
+
+  const [ownedChat] = await db
+    .select({ id: chat.id })
+    .from(chat)
+    .where(and(eq(chat.id, chatId), eq(chat.userId, userId)))
+    .limit(1);
+
+  if (!ownedChat) {
+    throw new Error("Chat not found.");
+  }
+
+  await db
+    .insert(chatEvent)
+    .values(
+      events.map(({ event, eventIndex }) => ({
+        chatId,
+        event,
+        eventIndex,
+        id: event.meta.id || randomUUID(),
+      }))
+    )
+    .onConflictDoUpdate({
+      set: { event: sql`excluded.event` },
+      target: [chatEvent.chatId, chatEvent.eventIndex],
+    });
+}
+
 export async function skipChatAuthorization({
   chatId,
   events,
@@ -237,8 +306,8 @@ export async function skipChatAuthorization({
   userId,
 }: {
   readonly chatId: string;
-  readonly events: readonly HandleMessageStreamEvent[];
-  readonly session: SessionState;
+  readonly events: readonly MessageStreamEvent[];
+  readonly session: ClientSessionState | undefined;
   readonly userId: string;
 }) {
   if (events.length === 0) {
@@ -308,23 +377,6 @@ export async function skipChatAuthorization({
   };
 }
 
-export async function saveChatSessionState({
-  chatId,
-  session,
-  userId,
-}: {
-  readonly chatId: string;
-  readonly session: SessionState;
-  readonly userId: string;
-}) {
-  await db
-    .update(chat)
-    .set({
-      eveSession: session,
-    })
-    .where(and(eq(chat.id, chatId), eq(chat.userId, userId)));
-}
-
 export async function appendChatEvent({
   chatId,
   event,
@@ -332,7 +384,7 @@ export async function appendChatEvent({
   userId,
 }: {
   readonly chatId: string;
-  readonly event: HandleMessageStreamEvent;
+  readonly event: MessageStreamEvent;
   readonly eventIndex: number;
   readonly userId: string;
 }) {
@@ -352,7 +404,7 @@ export async function appendChatEvent({
       chatId,
       event,
       eventIndex,
-      id: randomUUID(),
+      id: event.meta.id || randomUUID(),
     })
     .onConflictDoUpdate({
       set: { event },
@@ -367,8 +419,8 @@ export async function saveChatSnapshot({
   userId,
 }: {
   readonly chatId: string;
-  readonly events: readonly HandleMessageStreamEvent[];
-  readonly session: SessionState;
+  readonly events: readonly MessageStreamEvent[];
+  readonly session: ClientSessionState | undefined;
   readonly userId: string;
 }) {
   const [ownedChat] = await db
@@ -389,7 +441,7 @@ export async function saveChatSnapshot({
           chatId,
           event,
           eventIndex,
-          id: randomUUID(),
+          id: event.meta.id || randomUUID(),
         }))
       )
       .onConflictDoUpdate({

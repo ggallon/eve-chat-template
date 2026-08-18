@@ -1,30 +1,41 @@
 import { isDeepEqualData } from "ai";
-import type { EveMessageData, HandleMessageStreamEvent } from "eve/client";
+import type { EveMessageData, MessageStreamEvent } from "eve/client";
 import { defaultMessageReducer } from "eve/react";
 
-function areSameStreamEvent(
-  left: HandleMessageStreamEvent,
-  right: HandleMessageStreamEvent | undefined
+export function areSameStreamEvent(
+  left: MessageStreamEvent,
+  right: MessageStreamEvent | undefined
 ) {
-  return right !== undefined && isDeepEqualData(left, right);
+  if (right === undefined) {
+    return false;
+  }
+
+  const leftId = left.meta?.id;
+  const rightId = right.meta?.id;
+
+  if (leftId && rightId) {
+    return leftId === rightId;
+  }
+
+  return isDeepEqualData(left, right);
 }
 
 export function appendUniqueStreamEvent(
-  events: readonly HandleMessageStreamEvent[],
-  event: HandleMessageStreamEvent
-): HandleMessageStreamEvent[] {
+  events: readonly MessageStreamEvent[],
+  event: MessageStreamEvent
+): MessageStreamEvent[] {
   if (
     events.some((existingEvent) => areSameStreamEvent(existingEvent, event))
   ) {
-    return events as HandleMessageStreamEvent[];
+    return events as MessageStreamEvent[];
   }
 
   return [...events, event];
 }
 
 function countSharedEventPrefix(
-  events: readonly HandleMessageStreamEvent[],
-  knownEvents: readonly HandleMessageStreamEvent[]
+  events: readonly MessageStreamEvent[],
+  knownEvents: readonly MessageStreamEvent[]
 ) {
   const count = Math.min(events.length, knownEvents.length);
 
@@ -37,7 +48,7 @@ function countSharedEventPrefix(
   return count;
 }
 
-export function findBoundaryEvent(events: readonly HandleMessageStreamEvent[]) {
+export function findBoundaryEvent(events: readonly MessageStreamEvent[]) {
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const event = events[index];
 
@@ -47,7 +58,7 @@ export function findBoundaryEvent(events: readonly HandleMessageStreamEvent[]) {
   }
 }
 
-export function getLocalEventKey(event: HandleMessageStreamEvent) {
+export function getLocalEventKey(event: MessageStreamEvent) {
   if (event.type === "authorization.completed") {
     return `${event.type}:${event.data.turnId}:${event.data.name}:${event.data.outcome}:${event.data.reason ?? ""}`;
   }
@@ -59,7 +70,7 @@ export function getLocalEventKey(event: HandleMessageStreamEvent) {
   return null;
 }
 
-export function isChatTurnSettledEvent(event: HandleMessageStreamEvent) {
+export function isChatTurnSettledEvent(event: MessageStreamEvent) {
   return (
     event.type === "authorization.required" ||
     event.type === "session.completed" ||
@@ -68,7 +79,7 @@ export function isChatTurnSettledEvent(event: HandleMessageStreamEvent) {
   );
 }
 
-export function hasOpenChatTurn(events: readonly HandleMessageStreamEvent[]) {
+export function hasOpenChatTurn(events: readonly MessageStreamEvent[]) {
   let open = false;
 
   for (const event of events) {
@@ -83,9 +94,9 @@ export function hasOpenChatTurn(events: readonly HandleMessageStreamEvent[]) {
 }
 
 export function mergeLocalEvents(
-  events: readonly HandleMessageStreamEvent[],
-  localEvents: readonly HandleMessageStreamEvent[]
-): HandleMessageStreamEvent[] {
+  events: readonly MessageStreamEvent[],
+  localEvents: readonly MessageStreamEvent[]
+): MessageStreamEvent[] {
   const merged = [...events];
 
   if (localEvents.length === 0) {
@@ -109,14 +120,14 @@ export function mergeLocalEvents(
 }
 
 export function mergeStreamEventLogs(
-  events: readonly HandleMessageStreamEvent[],
-  streamedEvents: readonly HandleMessageStreamEvent[]
-): HandleMessageStreamEvent[] {
+  events: readonly MessageStreamEvent[],
+  streamedEvents: readonly MessageStreamEvent[]
+): MessageStreamEvent[] {
   if (streamedEvents.length === 0) {
-    return events as HandleMessageStreamEvent[];
+    return events as MessageStreamEvent[];
   }
 
-  let merged: HandleMessageStreamEvent[] = [...events];
+  let merged: MessageStreamEvent[] = [...events];
 
   for (const event of streamedEvents) {
     const next = appendUniqueStreamEvent(merged, event);
@@ -130,8 +141,8 @@ export function mergeStreamEventLogs(
 }
 
 export function preserveKnownInitialEvents(
-  snapshotEvents: readonly HandleMessageStreamEvent[],
-  knownEvents: readonly HandleMessageStreamEvent[]
+  snapshotEvents: readonly MessageStreamEvent[],
+  knownEvents: readonly MessageStreamEvent[]
 ) {
   if (knownEvents.length === 0) {
     return snapshotEvents;
@@ -162,7 +173,7 @@ export function preserveKnownInitialEvents(
 }
 
 export function reduceEventsToMessageData(
-  events: readonly HandleMessageStreamEvent[]
+  events: readonly MessageStreamEvent[]
 ): EveMessageData {
   const reducer = defaultMessageReducer();
   let data = reducer.initial();

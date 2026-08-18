@@ -1,10 +1,10 @@
-import type { HandleMessageStreamEvent } from "eve/client";
+import type { MessageStreamEvent } from "eve/client";
 
 /**
  * from : https://github.com/vercel/eve/blob/210f097917cf780075694bec5b94734069282c39/packages/eve/src/client/ndjson.ts#L35-L85
  * Reads newline-delimited JSON events from a `ReadableStream<Uint8Array>`.
  *
- * Yields one parsed {@link HandleMessageStreamEvent} per complete NDJSON line.
+ * Yields one parsed {@link MessageStreamEvent} per complete NDJSON line.
  * Handles partial lines across chunks via an internal buffer.
  *
  * All read errors — including socket disconnections — propagate to the caller.
@@ -12,7 +12,7 @@ import type { HandleMessageStreamEvent } from "eve/client";
  */
 export async function* readNdjsonStream(
   body: ReadableStream<Uint8Array>
-): AsyncGenerator<HandleMessageStreamEvent> {
+): AsyncGenerator<MessageStreamEvent> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -40,7 +40,7 @@ export async function* readNdjsonStream(
         buffer = buffer.slice(newlineIndex + 1);
 
         if (line.length > 0) {
-          yield JSON.parse(line) as HandleMessageStreamEvent;
+          yield JSON.parse(line) as MessageStreamEvent;
         }
 
         newlineIndex = buffer.indexOf("\n");
@@ -50,7 +50,7 @@ export async function* readNdjsonStream(
     // Yield any trailing content without a final newline.
     const trailing = buffer.trim();
     if (trailing.length > 0) {
-      yield JSON.parse(trailing) as HandleMessageStreamEvent;
+      yield JSON.parse(trailing) as MessageStreamEvent;
     }
   } finally {
     if (!reachedEof) {

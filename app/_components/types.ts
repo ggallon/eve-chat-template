@@ -1,6 +1,7 @@
 export type AgentChatControllerStatus = {
   readonly disabledReason?: string;
   readonly isBusy: boolean;
+  readonly isCancelling: boolean;
   readonly isDisabled: boolean;
   readonly isEmpty: boolean;
 };

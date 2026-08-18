@@ -1,4 +1,4 @@
-import type { HandleMessageStreamEvent } from "eve/client";
+import type { MessageStreamEvent } from "eve/client";
 import { formatResponseError, isAbortError } from "./error";
 import { isChatTurnSettledEvent } from "./events";
 import { readNdjsonStream } from "./json-utils";
@@ -79,9 +79,9 @@ async function openStreamBody({
 }
 
 export function namespaceStreamEvent(
-  event: HandleMessageStreamEvent,
+  event: MessageStreamEvent,
   namespace: string | undefined
-): HandleMessageStreamEvent {
+): MessageStreamEvent {
   if (!namespace) {
     return event;
   }
@@ -111,7 +111,7 @@ export function namespaceStreamEvent(
       ...event.data,
       turnId: `${prefix}${turnId}`,
     },
-  } as HandleMessageStreamEvent;
+  } as MessageStreamEvent;
 }
 
 export async function* streamSessionEvents({
@@ -122,12 +122,12 @@ export async function* streamSessionEvents({
   startIndex,
 }: {
   readonly ignoreLeadingWaiting?: boolean;
-  readonly onFinalize: (events: readonly HandleMessageStreamEvent[]) => void;
+  readonly onFinalize: (events: readonly MessageStreamEvent[]) => void;
   readonly sessionId: string;
   readonly signal?: AbortSignal;
   readonly startIndex: number;
 }) {
-  const events: HandleMessageStreamEvent[] = [];
+  const events: MessageStreamEvent[] = [];
   let nextIndex = startIndex;
   let disconnectReconnectsRemaining = STREAM_DISCONNECT_RECONNECT_ATTEMPTS;
   let lastProgressAt = Date.now();
@@ -201,7 +201,7 @@ export function createBrowserMessageResponse({
 }: {
   readonly continuationToken?: string;
   readonly ignoreLeadingWaiting?: boolean;
-  readonly onFinalize: (events: readonly HandleMessageStreamEvent[]) => void;
+  readonly onFinalize: (events: readonly MessageStreamEvent[]) => void;
   readonly sessionId: string;
   readonly signal?: AbortSignal;
   readonly startIndex: number;

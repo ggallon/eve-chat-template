@@ -11,7 +11,7 @@ import {
 } from "@/lib/chat/provisional-chat";
 import { useChatShell } from "./chat-shell-context";
 import { ComposerFooterControls } from "./composer-footer-controls";
-import { IDLE_CONTROLLER_STATUS } from "./controller";
+import { IDLE_AGENT_CHAT_CONTROLLER_STATUS } from "./controller";
 import { ErrorToast } from "./error-toast";
 import { useRestoredDraft } from "./use-restored-draft";
 
@@ -114,7 +114,7 @@ export function HomeChatPage() {
               autoFocus
               disabledReason={composerDisabledReason}
               footerStart={<ComposerFooterControls />}
-              isBusy={IDLE_CONTROLLER_STATUS.isBusy}
+              isBusy={IDLE_AGENT_CHAT_CONTROLLER_STATUS.isBusy}
               isPreparing={submitting}
               onChange={setDraft}
               onStop={() => {}}

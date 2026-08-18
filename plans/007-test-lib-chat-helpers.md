@@ -116,7 +116,7 @@ Read `lib/chat/events.ts` first to confirm the exact settled-event type set
 table-driven test:
 
 - one `it` per settled type → returns `true`
-- one `it` each for several NON-settled `HandleMessageStreamEvent` variants
+- one `it` each for several NON-settled `MessageStreamEvent` variants
   (e.g. `session.started`, `message.part`, `tool.call`, `authorization.required`)
   → returns `false`
 - a final `it` for an unknown string `type` → returns `false` (defensive)
